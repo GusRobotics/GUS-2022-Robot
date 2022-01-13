@@ -40,16 +40,15 @@ public class Robot extends TimedRobot {
   private static XboxController joy_base = new XboxController(0);
 
   // Drive motors
-  CANSparkMax m_drive_left1 = new CANSparkMax(drive_left1_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_left = new CANSparkMax(drive_left1_ID, MotorType.kBrushless);
   CANSparkMax m_drive_left2 = new CANSparkMax(drive_left2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_left3 = new CANSparkMax(drive_left3_ID, MotorType.kBrushless);
-
-  
-  CANSparkMax m_drive_right1 = new CANSparkMax(drive_right1_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_right = new CANSparkMax(drive_right1_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right2 = new CANSparkMax(drive_right2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right3 = new CANSparkMax(drive_right3_ID, MotorType.kBrushless);
 
   // Initialize drive train
+  DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
 
 
   /**
@@ -61,6 +60,15 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    // Set secondary left motors to follow the leader
+    m_drive_left2.follow(m_drive_left);
+    m_drive_left3.follow(m_drive_left);
+
+    // Set secondary right motors to follow the leader
+    m_drive_right2.follow(m_drive_right);
+    m_drive_right3.follow(m_drive_right);
+
   }
 
   /**
@@ -111,7 +119,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-
+    // Run drive
+    drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
   }
 
   /** This function is called once when the robot is disabled. */
