@@ -29,6 +29,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   // Constant CAN IDs
+  // **Make sure to match these when downloading the firmware and other stuff for the neos**
   private static final int drive_left1_ID = 1;
   private static final int drive_left2_ID = 2;
   private static final int drive_left3_ID = 3; 
