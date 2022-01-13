@@ -69,6 +69,14 @@ public class Robot extends TimedRobot {
     m_drive_right2.follow(m_drive_right);
     m_drive_right3.follow(m_drive_right);
 
+    // For all motors, reset to factory defaults
+    m_drive_left.restoreFactoryDefaults();
+    m_drive_left2.restoreFactoryDefaults();
+    m_drive_left3.restoreFactoryDefaults();
+    m_drive_right.restoreFactoryDefaults();
+    m_drive_right2.restoreFactoryDefaults();
+    m_drive_right3.restoreFactoryDefaults();
+
   }
 
   /**
