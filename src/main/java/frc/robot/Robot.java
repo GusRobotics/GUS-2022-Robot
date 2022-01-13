@@ -12,6 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
+// Neo external resources
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType; // I am not sure exactly why I need this, but we used it in 2019
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -25,10 +28,28 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+  // Constant CAN IDs
+  private static final int drive_left1_ID = 1;
+  private static final int drive_left2_ID = 2;
+  private static final int drive_left3_ID = 3; 
+  private static final int drive_right1_ID = 4;
+  private static final int drive_right2_ID = 5;
+  private static final int drive_right3_ID = 6;
 
   // Create objects for major subsystems
   private static XboxController joy_base = new XboxController(0);
+
+  // Drive motors
+  CANSparkMax m_drive_left1 = new CANSparkMax(drive_left1_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_left2 = new CANSparkMax(drive_left2_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_left3 = new CANSparkMax(drive_left3_ID, MotorType.kBrushless);
+
   
+  CANSparkMax m_drive_right1 = new CANSparkMax(drive_right1_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_right2 = new CANSparkMax(drive_right2_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_right3 = new CANSparkMax(drive_right3_ID, MotorType.kBrushless);
+
+  // Initialize drive train
 
 
   /**
@@ -89,7 +110,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
