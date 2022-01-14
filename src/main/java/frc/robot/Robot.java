@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // My imports
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 // Neo external resources
@@ -38,7 +38,7 @@ public class Robot extends TimedRobot {
   private static final int drive_right3_ID = 6;
 
   // Create objects for major subsystems
-  private static XboxController joy_base = new XboxController(0);
+  private static PS4Controller joy_base = new PS4Controller(0);
 
   // Drive motors
   CANSparkMax m_drive_left = new CANSparkMax(drive_left1_ID, MotorType.kBrushless);
