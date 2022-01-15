@@ -30,12 +30,12 @@ public class Robot extends TimedRobot {
 
   // Constant CAN IDs
   // **Make sure to match these when downloading the firmware and other stuff for the neos**
-  private static final int drive_left1_ID = 1;
-  private static final int drive_left2_ID = 2;
-  private static final int drive_left3_ID = 3; 
-  private static final int drive_right1_ID = 4;
-  private static final int drive_right2_ID = 5;
-  private static final int drive_right3_ID = 6;
+  private static final int drive_left1_ID = 2;
+  private static final int drive_left2_ID = 3;
+  private static final int drive_left3_ID = 4; 
+  private static final int drive_right1_ID = 5;
+  private static final int drive_right2_ID = 6;
+  private static final int drive_right3_ID = 7;
 
   // Create objects for major subsystems
   private static PS4Controller joy_base = new PS4Controller(0);
