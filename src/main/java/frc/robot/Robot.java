@@ -50,6 +50,9 @@ public class Robot extends TimedRobot {
   CANSparkMax m_drive_right3 = new CANSparkMax(drive_right3_ID, MotorType.kBrushless);
   //CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
 
+  // Add PDB for data reading (optional)
+  //PowerDistributionPanel examplePD = new PowerDistribution(0, ModuleType.kAutomatic);
+
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
 
@@ -63,6 +66,11 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    // Invert all right motors
+    m_drive_right.setInverted(true);
+    m_drive_right2.setInverted(true);
+    m_drive_right3.setInverted(true);
 
     // Set secondary left motors to follow the leader
     m_drive_left2.follow(m_drive_left);
