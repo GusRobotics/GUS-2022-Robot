@@ -167,7 +167,8 @@ public class Robot extends TimedRobot {
 
     // Shooter
     if(joy_base.getCircleButton()) {
-      m_shooter.set(0.45);
+      // .45, 7ft to back bumper
+      m_shooter.set(.80);
     }
     else {
       m_shooter.set(0);
