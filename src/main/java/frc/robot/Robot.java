@@ -30,16 +30,22 @@ public class Robot extends TimedRobot {
 
   // Constant CAN IDs
   // **Make sure to match these when downloading the firmware and other stuff for the neos**
+  // 0 - RoboRio, 1 - PDB, 13 - PCB
   private static final int drive_left1_ID = 2;
   private static final int drive_left2_ID = 3;
   private static final int drive_left3_ID = 4; 
   private static final int drive_right1_ID = 5;
   private static final int drive_right2_ID = 6;
   private static final int drive_right3_ID = 7;
-  //private static final int intake_ID = 8;
+  private static final int shooter1_ID = 8;
+  private static final int shooter2_ID = 9;
+  //private static final int intake_ID = ?;
 
   // Create objects for major subsystems
   private static PS4Controller joy_base = new PS4Controller(0);
+
+  // Add PDB for data reading (optional)
+  //PowerDistributionPanel examplePD = new PowerDistribution(0, ModuleType.kAutomatic);
 
   // Drive motors
   CANSparkMax m_drive_left = new CANSparkMax(drive_left1_ID, MotorType.kBrushless);
@@ -48,10 +54,13 @@ public class Robot extends TimedRobot {
   CANSparkMax m_drive_right = new CANSparkMax(drive_right1_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right2 = new CANSparkMax(drive_right2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right3 = new CANSparkMax(drive_right3_ID, MotorType.kBrushless);
-  //CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
 
-  // Add PDB for data reading (optional)
-  //PowerDistributionPanel examplePD = new PowerDistribution(0, ModuleType.kAutomatic);
+  // Intake motors
+  // CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
+
+  // Shooter motors
+  CANSparkMax m_shooter = new CANSparkMax(shooter1_ID, MotorType.kBrushless);
+  CANSparkMax m_shooter2 = new CANSparkMax(shooter2_ID, MotorType.kBrushless);
 
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
@@ -75,6 +84,9 @@ public class Robot extends TimedRobot {
     m_drive_right2.follow(m_drive_right);
     m_drive_right3.follow(m_drive_right);
 
+    // Set secondary shooter motor to follow the leader
+    m_shooter2.follow(m_shooter);
+
     // For all motors, reset to factory defaults
     m_drive_left.restoreFactoryDefaults();
     m_drive_left2.restoreFactoryDefaults();
@@ -82,7 +94,7 @@ public class Robot extends TimedRobot {
     m_drive_right.restoreFactoryDefaults();
     m_drive_right2.restoreFactoryDefaults();
     m_drive_right3.restoreFactoryDefaults();
-    
+
     // Invert right leader
     m_drive_right.setInverted(true);
 
@@ -140,6 +152,26 @@ public class Robot extends TimedRobot {
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
 
     // Intake
+    /** 
+    if(joy_base.getSquareButton()) {
+      m_intake.set(1);
+    }
+    else if(joy_base.getTriangleButton()) {
+      m_intake.set(-1);
+    }
+    else {
+      m_intake.set(0);
+    }
+    */
+    
+
+    // Shooter
+    if(joy_base.getCircleButton()) {
+      m_shooter.set(1);
+    }
+    else {
+      m_shooter.set(0);
+    }
     
   }
 
