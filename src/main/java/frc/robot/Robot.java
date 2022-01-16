@@ -36,6 +36,7 @@ public class Robot extends TimedRobot {
   private static final int drive_right1_ID = 5;
   private static final int drive_right2_ID = 6;
   private static final int drive_right3_ID = 7;
+  //private static final int intake_ID = 8;
 
   // Create objects for major subsystems
   private static PS4Controller joy_base = new PS4Controller(0);
@@ -47,6 +48,7 @@ public class Robot extends TimedRobot {
   CANSparkMax m_drive_right = new CANSparkMax(drive_right1_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right2 = new CANSparkMax(drive_right2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right3 = new CANSparkMax(drive_right3_ID, MotorType.kBrushless);
+  //CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
 
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
@@ -130,6 +132,9 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     // Run drive
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
+
+    // Intake
+    
   }
 
   /** This function is called once when the robot is disabled. */
