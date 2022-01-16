@@ -167,7 +167,7 @@ public class Robot extends TimedRobot {
 
     // Shooter
     if(joy_base.getCircleButton()) {
-      m_shooter.set(1);
+      m_shooter.set(0.45);
     }
     else {
       m_shooter.set(0);
