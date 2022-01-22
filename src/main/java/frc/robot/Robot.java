@@ -12,9 +12,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
-// Neo external resources
+// Neo Library
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType; // I am not sure exactly why I need this, but we used it in 2019
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+// Talon SRX External Resources
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
+// Talon SRX Internal Resources
+import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
+
+
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -39,6 +49,7 @@ public class Robot extends TimedRobot {
   private static final int drive_right3_ID = 7;
   private static final int shooter1_ID = 8;
   private static final int shooter2_ID = 9;
+  private static final int index_ID = 10;
   //private static final int intake_ID = ?;
 
   // Create objects for major subsystems
@@ -57,6 +68,9 @@ public class Robot extends TimedRobot {
 
   // Intake motors
   // CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
+
+  // Index motor
+
 
   // Shooter motors
   CANSparkMax m_shooter = new CANSparkMax(shooter1_ID, MotorType.kBrushless);
@@ -163,6 +177,9 @@ public class Robot extends TimedRobot {
       m_intake.set(0);
     }
     */
+
+    // Index
+
     
 
     // Shooter
