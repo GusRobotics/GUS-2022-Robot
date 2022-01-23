@@ -16,14 +16,10 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-// Talon SRX External Resources
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
-// Talon SRX Internal Resources
-import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
-
-
+// Talon SRX Resources
+// import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+// import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
+// import edu.wpi.first.wpilibj.motorcontrol.Talon;
 
 
 /**
@@ -66,16 +62,16 @@ public class Robot extends TimedRobot {
   CANSparkMax m_drive_right2 = new CANSparkMax(drive_right2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right3 = new CANSparkMax(drive_right3_ID, MotorType.kBrushless);
 
-  // Intake motors
-  // CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
-
-  // Index motor
-
-
   // Shooter motors
   CANSparkMax m_shooter = new CANSparkMax(shooter1_ID, MotorType.kBrushless);
   CANSparkMax m_shooter2 = new CANSparkMax(shooter2_ID, MotorType.kBrushless);
 
+  // Index motor
+  CANSparkMax m_index = new CANSparkMax(index_ID, MotorType.kBrushless);
+
+  // Intake motors
+  // CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
+  
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
 
@@ -108,6 +104,9 @@ public class Robot extends TimedRobot {
     m_drive_right.restoreFactoryDefaults();
     m_drive_right2.restoreFactoryDefaults();
     m_drive_right3.restoreFactoryDefaults();
+    m_shooter.restoreFactoryDefaults();
+    m_shooter2.restoreFactoryDefaults();
+    m_index.restoreFactoryDefaults();
 
     // Invert right leader
     m_drive_right.setInverted(true);
@@ -178,10 +177,6 @@ public class Robot extends TimedRobot {
     }
     */
 
-    // Index
-
-    
-
     // Shooter
     if(joy_base.getCircleButton()) {
       // .45, 7ft to back bumper
@@ -189,6 +184,14 @@ public class Robot extends TimedRobot {
     }
     else {
       m_shooter.set(0);
+    }
+
+    // Index
+    if(joy_base.getL1Button()) {
+      m_index.set(1);
+    }
+    else {
+      m_index.set(0);
     }
     
   }
