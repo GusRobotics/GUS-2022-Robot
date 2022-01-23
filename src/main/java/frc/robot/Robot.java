@@ -202,7 +202,8 @@ public class Robot extends TimedRobot {
     // Shooter
     if(joy_base.getCircleButton()) {
       // .45, 7ft to back bumper
-      m_shooter.set(.25);
+      // .72 flush with wall for high shot
+      m_shooter.set(.72);
     }
     else {
       m_shooter.set(0);
@@ -210,7 +211,7 @@ public class Robot extends TimedRobot {
 
     // Index
     if(joy_base.getL1Button()) {
-      m_index.set(1);
+      m_index.set(0.8);
     }
     else if(joy_base.getR1Button()) {
       m_index.set(-1);
