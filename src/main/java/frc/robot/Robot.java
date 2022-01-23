@@ -190,6 +190,9 @@ public class Robot extends TimedRobot {
     if(joy_base.getL1Button()) {
       m_index.set(1);
     }
+    else if(joy_base.getR1Button()) {
+      m_index.set(-1);
+    }
     else {
       m_index.set(0);
     }
