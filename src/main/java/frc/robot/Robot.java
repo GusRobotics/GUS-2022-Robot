@@ -16,6 +16,9 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+// Neo encoder
+import com.revrobotics.RelativeEncoder;
+
 // Talon SRX Resources
 // import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
@@ -36,7 +39,8 @@ public class Robot extends TimedRobot {
 
   // Constant CAN IDs
   // **Make sure to match these when downloading the firmware and other stuff for the neos**
-  // 0 - RoboRio, 1 - PDB, 13 - PCB
+  // Reserved IDs: (RoboRio, 0), (PDB, 1), (PCB, 13)
+
   private static final int drive_left1_ID = 2;
   private static final int drive_left2_ID = 3;
   private static final int drive_left3_ID = 4; 
@@ -47,6 +51,10 @@ public class Robot extends TimedRobot {
   private static final int shooter2_ID = 9;
   private static final int index_ID = 10;
   //private static final int intake_ID = ?;
+
+  // Constant Robot Stats
+  private static final int wheel_radius = 5;
+  private static final double wheel_circumference = 2*wheel_radius*Math.PI;
 
   // Create objects for major subsystems
   private static PS4Controller joy_base = new PS4Controller(0);
@@ -133,6 +141,17 @@ public class Robot extends TimedRobot {
    * below with additional strings. If using the SendableChooser make sure to add them to the
    * chooser code above as well.
    */
+
+  /**
+   * Strategies
+   * Time Based (Dead Reckining) - susceptible to friction, momentum, etc.
+   * Simple Encoder (Bang Bang Control) - susceptible to end momentum
+   * PID - high speed and accuracy
+   * 
+   * General PID Notes
+   * Set point is where the system is going towards
+   */
+
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
@@ -149,7 +168,10 @@ public class Robot extends TimedRobot {
         break;
       case kDefaultAuto:
       default:
-        // Put default auto code here
+        // Test PID - drive 5 feet
+        
+
+
         break;
     }
   }
@@ -180,7 +202,7 @@ public class Robot extends TimedRobot {
     // Shooter
     if(joy_base.getCircleButton()) {
       // .45, 7ft to back bumper
-      m_shooter.set(.80);
+      m_shooter.set(.25);
     }
     else {
       m_shooter.set(0);
