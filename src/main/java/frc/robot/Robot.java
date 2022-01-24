@@ -5,21 +5,22 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-// My imports
+// General Resources
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
-// Neo Library
+// Data Display Tools
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+// Neo Resources
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-// Neo encoder
-import com.revrobotics.RelativeEncoder;
-
-// Talon SRX Resources
+// Talon SRX Resources (Currently not in use)
 // import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
 // import edu.wpi.first.wpilibj.motorcontrol.Talon;
@@ -37,10 +38,10 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+  // ROBOT CONSTANTS
   // Constant CAN IDs
   // **Make sure to match these when downloading the firmware and other stuff for the neos**
   // Reserved IDs: (RoboRio, 0), (PDB, 1), (PCB, 13)
-
   private static final int drive_left1_ID = 2;
   private static final int drive_left2_ID = 3;
   private static final int drive_left3_ID = 4; 
@@ -56,7 +57,8 @@ public class Robot extends TimedRobot {
   private static final int wheel_radius = 5;
   private static final double wheel_circumference = 2*wheel_radius*Math.PI;
 
-  // Create objects for major subsystems
+  // INITIALIZE ELECTRONICS
+  // Controller
   private static PS4Controller joy_base = new PS4Controller(0);
 
   // Add PDB for data reading (optional)
@@ -159,6 +161,19 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
+  // Target
+  double set_point = 5;
+
+  // Constant PID drive values
+  final double kP = 0.5;
+  final double kI = 0; // 0.1?
+  final double kD = 0;
+  double integral = 0;
+  double derivative = 0;
+  // !!! Temporary measure
+  double last_error = set_point;
+  double last_time = Timer.getFPGATimestamp();
+
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
@@ -168,9 +183,36 @@ public class Robot extends TimedRobot {
         break;
       case kDefaultAuto:
       default:
-        // Test PID - drive 5 feet
-        
+        // Remember to reset encoders before starting this or things could get messy
+        double error = set_point - m_drive_left.getEncoder().getPosition()*wheel_circumference;
 
+        // Find time elapsed
+        double dt = Timer.getFPGATimestamp() - last_time;
+
+        // Update integral
+        integral += error * dt;
+
+        // Potentially reset integral on passing set point, also consider capping it or reseting it if it gets too big
+
+        // Update derivative
+        derivative = (error - last_error)/dt;
+
+        // Determine output speed
+        double outputSpeed = error * kP + integral * kI + derivative * kD;
+
+        // Set motors to calculated speed
+        m_drive_left.set(outputSpeed);
+        m_drive_right.set(outputSpeed);
+
+        // Update variables
+        last_time = Timer.getFPGATimestamp();
+        last_error = error;
+        
+        // Wait a set time
+        // [DELAY]
+
+        // Print data to shuffleboard (graphing would be great)
+        SmartDashboard.putNumber("encoder value", m_drive_left.getEncoder().getPosition()*wheel_circumference);
 
         break;
     }
