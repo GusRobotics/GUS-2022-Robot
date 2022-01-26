@@ -54,8 +54,10 @@ public class Robot extends TimedRobot {
   //private static final int intake_ID = ?;
 
   // Constant Robot Stats (IN FEET)
-  private static final double wheel_radius = 5.0/12;
-  private static final double wheel_circumference = 2*wheel_radius*Math.PI;
+  // private static final double wheel_radius = 5.0/12;
+  // private static final double wheel_circumference = 2*wheel_radius*Math.PI;
+  // private static final double drive_gear_ratio = 1; //11.03
+  private static final double rev_distance_conversion = 2/11.03;
 
   // INITIALIZE ELECTRONICS
   // Controller
@@ -171,7 +173,7 @@ public class Robot extends TimedRobot {
   double set_point = 10;
 
   // Constant PID drive values
-  final double kP = 0.05;
+  final double kP = 0.2;
   final double kI = 0; // 0.1?
   final double kD = 0;
   double integral = 0;
@@ -190,7 +192,7 @@ public class Robot extends TimedRobot {
       case kDefaultAuto:
       default:
         // Remember to reset encoders before starting this or things could get messy
-        double error = set_point - (m_drive_left.getEncoder().getPosition()-initial_encoder)*wheel_circumference;
+        double error = set_point - (m_drive_left.getEncoder().getPosition()-initial_encoder)*rev_distance_conversion;
 
         // Find time elapsed
         double dt = Timer.getFPGATimestamp() - last_time;
@@ -207,8 +209,8 @@ public class Robot extends TimedRobot {
         double outputSpeed = error * kP + integral * kI + derivative * kD;
 
         // Set motors to calculated speed
-        // m_drive_left.set(outputSpeed);
-        // m_drive_right.set(outputSpeed);
+        m_drive_left.set(outputSpeed);
+        m_drive_right.set(outputSpeed);
 
         // Update variables
         last_time = Timer.getFPGATimestamp();
@@ -218,7 +220,7 @@ public class Robot extends TimedRobot {
         // [DELAY]
 
         // Print data to shuffleboard (graphing would be great)
-        SmartDashboard.putNumber("encoder value", (m_drive_left.getEncoder().getPosition() - initial_encoder)*wheel_circumference);
+        SmartDashboard.putNumber("encoder value", (m_drive_left.getEncoder().getPosition() - initial_encoder)*rev_distance_conversion);
         SmartDashboard.putNumber("power", outputSpeed);
         SmartDashboard.putNumber("error", error);
 
