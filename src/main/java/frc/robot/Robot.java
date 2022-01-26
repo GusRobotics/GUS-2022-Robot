@@ -154,32 +154,24 @@ public class Robot extends TimedRobot {
    * Set point is where the system is going towards
    */
 
+  double initial_encoder;
+
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
 
-    // For all motors, reset to factory defaults
-    m_drive_left.restoreFactoryDefaults();
-    m_drive_left2.restoreFactoryDefaults();
-    m_drive_left3.restoreFactoryDefaults();
-    m_drive_right.restoreFactoryDefaults();
-    m_drive_right2.restoreFactoryDefaults();
-    m_drive_right3.restoreFactoryDefaults();
-    m_shooter.restoreFactoryDefaults();
-    m_shooter2.restoreFactoryDefaults();
-    m_index.restoreFactoryDefaults();
-
-    // Invert right leader
-    m_drive_right.setInverted(true);
+    // Reset encoder
+    initial_encoder = m_drive_left.getEncoder().getPosition();
+    SmartDashboard.putNumber("Initial Encoder", m_drive_left.getEncoder().getPosition() - initial_encoder);
   }
 
   // Target
-  double set_point = 5;
+  double set_point = 10;
 
   // Constant PID drive values
-  final double kP = 0.1;
+  final double kP = 0.05;
   final double kI = 0; // 0.1?
   final double kD = 0;
   double integral = 0;
@@ -198,7 +190,7 @@ public class Robot extends TimedRobot {
       case kDefaultAuto:
       default:
         // Remember to reset encoders before starting this or things could get messy
-        double error = set_point - m_drive_left.getEncoder().getPosition()*wheel_circumference;
+        double error = set_point - (m_drive_left.getEncoder().getPosition()-initial_encoder)*wheel_circumference;
 
         // Find time elapsed
         double dt = Timer.getFPGATimestamp() - last_time;
@@ -215,8 +207,8 @@ public class Robot extends TimedRobot {
         double outputSpeed = error * kP + integral * kI + derivative * kD;
 
         // Set motors to calculated speed
-        m_drive_left.set(outputSpeed);
-        m_drive_right.set(outputSpeed);
+        // m_drive_left.set(outputSpeed);
+        // m_drive_right.set(outputSpeed);
 
         // Update variables
         last_time = Timer.getFPGATimestamp();
@@ -226,8 +218,7 @@ public class Robot extends TimedRobot {
         // [DELAY]
 
         // Print data to shuffleboard (graphing would be great)
-        SmartDashboard.putNumber("encoder value", m_drive_left.getEncoder().getPosition()*wheel_circumference);
-        SmartDashboard.putNumber("time", Timer.getFPGATimestamp());
+        SmartDashboard.putNumber("encoder value", (m_drive_left.getEncoder().getPosition() - initial_encoder)*wheel_circumference);
         SmartDashboard.putNumber("power", outputSpeed);
         SmartDashboard.putNumber("error", error);
 
