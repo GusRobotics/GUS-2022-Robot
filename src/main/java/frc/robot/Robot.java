@@ -54,7 +54,7 @@ public class Robot extends TimedRobot {
   //private static final int intake_ID = ?;
 
   // Constant Robot Stats (IN FEET)
-  private static final double wheel_radius = 5/12;
+  private static final double wheel_radius = 5.0/12;
   private static final double wheel_circumference = 2*wheel_radius*Math.PI;
 
   // INITIALIZE ELECTRONICS
@@ -159,13 +159,27 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+
+    // For all motors, reset to factory defaults
+    m_drive_left.restoreFactoryDefaults();
+    m_drive_left2.restoreFactoryDefaults();
+    m_drive_left3.restoreFactoryDefaults();
+    m_drive_right.restoreFactoryDefaults();
+    m_drive_right2.restoreFactoryDefaults();
+    m_drive_right3.restoreFactoryDefaults();
+    m_shooter.restoreFactoryDefaults();
+    m_shooter2.restoreFactoryDefaults();
+    m_index.restoreFactoryDefaults();
+
+    // Invert right leader
+    m_drive_right.setInverted(true);
   }
 
   // Target
   double set_point = 5;
 
   // Constant PID drive values
-  final double kP = 0.5;
+  final double kP = 0.1;
   final double kI = 0; // 0.1?
   final double kD = 0;
   double integral = 0;
@@ -213,6 +227,9 @@ public class Robot extends TimedRobot {
 
         // Print data to shuffleboard (graphing would be great)
         SmartDashboard.putNumber("encoder value", m_drive_left.getEncoder().getPosition()*wheel_circumference);
+        SmartDashboard.putNumber("time", Timer.getFPGATimestamp());
+        SmartDashboard.putNumber("power", outputSpeed);
+        SmartDashboard.putNumber("error", error);
 
         break;
     }
