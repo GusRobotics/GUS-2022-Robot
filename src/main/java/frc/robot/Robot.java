@@ -53,8 +53,8 @@ public class Robot extends TimedRobot {
   private static final int index_ID = 10;
   //private static final int intake_ID = ?;
 
-  // Constant Robot Stats
-  private static final int wheel_radius = 5;
+  // Constant Robot Stats (IN FEET)
+  private static final double wheel_radius = 5/12;
   private static final double wheel_circumference = 2*wheel_radius*Math.PI;
 
   // INITIALIZE ELECTRONICS
