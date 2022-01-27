@@ -1,13 +1,15 @@
 package frc.robot;
 
+// Default resources
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 // Neo Resources
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkMaxPIDController;
 
 public class PrecisionDrive {
-    private CANSparkMax m_left_drive;
-    private CANSparkMax m_right_drive;
-    private SparkMaxPIDController m_pidController;
+    private CANSparkMax m_drive_left;
+    private CANSparkMax m_drive_right;
     private double set_point_rev;
     private double rev_to_dist;
 
@@ -20,42 +22,101 @@ public class PrecisionDrive {
     public double kMinOutput = -1;
     public double kMaxOutput = 1;
 
+    // Allowed error in feet
+    public double allowedError = 0.025;
+    public double correctTime = 0.125;
+
+    // Global storage
+    double last_time;
+    double integral;
+    double last_error;
+    double first_correct;
+    boolean correct;
+
     public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, double conversion) {
         // Store reference to motors
-        m_left_drive = m_left;
-        m_right_drive = m_right;
-
-        // Set all of the parameters for the PID loop
-        m_pidController = m_left_drive.getPIDController();
+        m_drive_left = m_left;
+        m_drive_right = m_right;
 
         // Set conversion factor
         rev_to_dist = conversion;
 
-        // Set all PID Coefficients
-        m_pidController.setP(kP);
-        m_pidController.setI(kI);
-        m_pidController.setD(kD);
-        m_pidController.setIZone(kIz);
-        m_pidController.setFF(kFF);
-        m_pidController.setOutputRange(kMinOutput, kMaxOutput);
-
-        // Start the set point to zero
-        set_point_rev = 0;
+        // Default instance variables
+        last_time = Timer.getFPGATimestamp();
+        integral = 0;
     }
 
     /** Reset PID with new set point. Current position is zeroed
      * @param distance in feet
     */
     public void setSetPoint(double distance) {
-        // Set new set point (current [rev] + distance [dist]/([dist]/[rev]) = [rev])
+        // Find distance to travel in rev: [dist]/([dist]/[rev])
+        double revs = distance/rev_to_dist;
+
         // This effectively adds the distance in the absence of a proper encoder reset function
-        set_point_rev = m_left_drive.getEncoder().getPosition() + distance/rev_to_dist;
+        set_point_rev = m_drive_left.getEncoder().getPosition() + revs;
+
+        // Reset all variables
+        last_time = Timer.getFPGATimestamp();
+        integral = 0;
+        last_error = revs;
 
     }
 
-    /** Iterative function that adjusts power to get the drive train to its set point*/
-    public void positionControl() {
-        m_pidController.setReference(set_point_rev, CANSparkMax.ControlType.kPosition);
+    /** Iterative function that adjusts power to get the drive train to its set point
+     * @return boolean complete that indicates if the error is within an acceptable range
+    */
+    public boolean positionControl() {
+        double error = set_point_rev - m_drive_left.getEncoder().getPosition();
+
+        // Find time elapsed
+        double dt = Timer.getFPGATimestamp() - last_time;
+
+        // Update integral
+        integral += error * dt;
+
+        // Potentially reset integral on passing set point, also consider capping it or reseting it if it gets too big
+
+        // Update derivative
+        double derivative = (error - last_error)/dt;
+
+        // Determine output speed
+        double outputSpeed = error * kP + integral * kI + derivative * kD;
+
+        // Set motors to calculated speed
+        m_drive_left.set(outputSpeed);
+        m_drive_right.set(outputSpeed);
+
+        // Update variables
+        last_time = Timer.getFPGATimestamp();
+        last_error = error;
+        
+        // Wait a set time
+        // [DELAY]
+
+        // Print data to shuffleboard (graphing would be great)
+        SmartDashboard.putNumber("encoder value", m_drive_left.getEncoder().getPosition());
+        SmartDashboard.putNumber("power", outputSpeed);
+        SmartDashboard.putNumber("error", error);
+
+        if(Math.abs(error) < allowedError/rev_to_dist) {
+            if(correct) {
+                // Wait until stable
+                if(Timer.getFPGATimestamp() - first_correct >= correctTime) {
+                    return true;
+                }
+                else {
+                    // Indicate position is in correct range
+                    correct = true;
+                    first_correct = Timer.getFPGATimestamp();
+                }
+            }
+            else {
+                correct = false;
+            }
+            
+        }
+        return false;
     }
 
     
