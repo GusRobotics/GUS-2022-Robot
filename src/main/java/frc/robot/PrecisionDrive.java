@@ -49,7 +49,7 @@ public class PrecisionDrive {
     /** Reset PID with new set point. Current position is zeroed
      * @param distance in feet
     */
-    public void setSetPoint(double distance) {
+    public void setDistance(double distance) {
         // Find distance to travel in rev: [dist]/([dist]/[rev])
         double revs = distance/rev_to_dist;
 
