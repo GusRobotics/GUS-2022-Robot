@@ -21,9 +21,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 // Talon SRX Resources (Currently not in use)
-// import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-// import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
-// import edu.wpi.first.wpilibj.motorcontrol.Talon;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 
 
 /**
@@ -51,12 +50,10 @@ public class Robot extends TimedRobot {
   private static final int shooter1_ID = 8;
   private static final int shooter2_ID = 9;
   private static final int index_ID = 10;
-  //private static final int intake_ID = ?;
+  // ENSURE THIS IS SET
+  private static final int intake_ID = 11;
 
   // Constant Robot Stats (IN FEET)
-  // private static final double wheel_radius = 5.0/12;
-  // private static final double wheel_circumference = 2*wheel_radius*Math.PI;
-  // private static final double drive_gear_ratio = 1; //11.03
   private static final double rev_distance_conversion = 2/11.03;
 
   // INITIALIZE ELECTRONICS
@@ -82,7 +79,7 @@ public class Robot extends TimedRobot {
   CANSparkMax m_index = new CANSparkMax(index_ID, MotorType.kBrushless);
 
   // Intake motors
-  // CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
+  TalonSRX m_intake = new TalonSRX(intake_ID);
   
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
@@ -270,6 +267,17 @@ public class Robot extends TimedRobot {
     }
     else {
       m_index.set(0);
+    }
+
+    // Intake
+    if(joy_base.getL2Button()) {
+      m_intake.set(ControlMode.PercentOutput, 1);
+    }
+    else if(joy_base.getR2Button()) {
+      m_intake.set(ControlMode.PercentOutput, -1);
+    }
+    else {
+      m_intake.set(ControlMode.PercentOutput, 0);
     }
     
   }
