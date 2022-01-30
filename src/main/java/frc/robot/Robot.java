@@ -18,11 +18,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import javax.swing.plaf.basic.BasicComboPopup.InvocationKeyHandler;
 
-// Neo Resources
+// Rev Resources
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-// Talon SRX Resources (Currently not in use)
+// Cross the Road Resources
+import com.ctre.phoenix.sensors.PigeonIMU;
 // import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // import com.ctre.phoenix.motorcontrol.ControlMode;
 
@@ -52,8 +53,10 @@ public class Robot extends TimedRobot {
   private static final int shooter1_ID = 8;
   private static final int shooter2_ID = 9;
   private static final int index_ID = 10;
-  // ENSURE THIS IS SET
-  private static final int intake_ID = 11;
+  // ENSURE THESE ARE SET
+  private static final int intake_ID = ?;
+  private static final int pigeon_ID = ?;
+
 
   // Constant Robot Stats (IN FEET)
   private static final double rev_distance_conversion = 2/11.03;
@@ -83,6 +86,9 @@ public class Robot extends TimedRobot {
   // Intake motors
   CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
   // TalonSRX m_intake = new TalonSRX(intake_ID);
+
+  // Gyro
+  PigeonIMU gyro = new PigeonIMU(pigeon_ID);
   
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
@@ -237,19 +243,6 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     // Run drive
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
-
-    // Intake
-    /** 
-    if(joy_base.getSquareButton()) {
-      m_intake.set(1);
-    }
-    else if(joy_base.getTriangleButton()) {
-      m_intake.set(-1);
-    }
-    else {
-      m_intake.set(0);
-    }
-    */
 
     // Shooter
     if(joy_base.getCircleButton()) {
