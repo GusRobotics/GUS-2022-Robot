@@ -36,11 +36,10 @@ public class PrecisionDrive {
     double first_correct;
     boolean correct;
 
-    public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, double conversion, PigeonIMU pigeon) {
+    public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, double conversion) {
         m_drive_left = m_left;
         m_drive_right = m_right;
         rev_to_dist = conversion;
-        imu = pigeon;
 
         // Default instance variables
         last_time = Timer.getFPGATimestamp();
