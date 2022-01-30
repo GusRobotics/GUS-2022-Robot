@@ -15,7 +15,7 @@ public class PrecisionDrive {
     private CANSparkMax m_drive_right;
     private double set_point;
     private double rev_to_dist;
-    private PigeonIMU gyro;
+    private PigeonIMU imu;
 
     // Tunable PID constants
     public double kP = 0;
@@ -41,7 +41,7 @@ public class PrecisionDrive {
         m_drive_left = m_left;
         m_drive_right = m_right;
         rev_to_dist = conversion;
-        gyro = pigeon;
+        imu = pigeon;
 
         // Default instance variables
         last_time = Timer.getFPGATimestamp();
@@ -67,27 +67,6 @@ public class PrecisionDrive {
         kIz = 0;
         kFF = 0;
         allowedError = 0.125;
-    }
-
-    /** Reset PID with new set point and set to rotate a given distance
-     * @param degrees in degrees. This must be between -180 and 180
-    */
-    public void setRotationControl(double degrees) { // NOT DONE
-        // This effectively adds the distance in the absence of a proper encoder reset function
-        // set_point = m_drive_left.getEncoder().getPosition() + revs;
-
-        // Reset all variables
-        last_time = Timer.getFPGATimestamp();
-        integral = 0;
-        last_error = degrees;
-
-        // Distance Constants:
-        kP = 0.1;
-        kI = 0;
-        kD = 0;
-        kIz = 0;
-        kFF = 0;
-        allowedError = 1;
     }
 
     /** Iterative function that adjusts power to get the drive train to its set point

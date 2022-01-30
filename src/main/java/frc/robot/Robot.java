@@ -180,7 +180,7 @@ public class Robot extends TimedRobot {
 
   // Constant PID drive values
   final double kP = 0.06;
-  final double kI = 0.01; // 0.1?
+  final double kI = 0; // 0.1?
   final double kD = 0;
   double integral = 0;
   double derivative = 0;
@@ -226,7 +226,7 @@ public class Robot extends TimedRobot {
         last_error = error;
         
         // Wait a set time
-        // [DELAY]
+        Timer.delay(0.005);
 
         // Print data to shuffleboard (graphing would be great)
         SmartDashboard.putNumber("encoder change, ", (m_drive_left.getEncoder().getPosition() - initial_encoder));
