@@ -162,18 +162,9 @@ public class Robot extends TimedRobot {
    * Set point is where the system is going towards
    */
 
+  
+    /**
   double initial_encoder;
-
-  @Override
-  public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
-
-    // Reset encoder
-    initial_encoder = m_drive_left.getEncoder().getPosition();
-    SmartDashboard.putNumber("Initial Encoder", m_drive_left.getEncoder().getPosition() - initial_encoder);
-  }
 
   // Target
   double set_point = 10;
@@ -187,6 +178,24 @@ public class Robot extends TimedRobot {
   // !!! Temporary measure
   double last_error = set_point;
   double last_time = Timer.getFPGATimestamp();
+  */
+
+  PrecisionDrive auto_drive;
+  int auto_stage;
+
+  @Override
+  public void autonomousInit() {
+    m_autoSelected = m_chooser.getSelected();
+    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    System.out.println("Auto selected: " + m_autoSelected);
+
+    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right, rev_distance_conversion);
+    auto_stage = 0;
+
+    // Reset encoder
+    // initial_encoder = m_drive_left.getEncoder().getPosition();
+    // SmartDashboard.putNumber("Initial Encoder", m_drive_left.getEncoder().getPosition() - initial_encoder);
+  }
 
   /** This function is called periodically during autonomous. */
   @Override
@@ -197,6 +206,19 @@ public class Robot extends TimedRobot {
         break;
       case kDefaultAuto:
       default:
+        switch(auto_stage) {
+          case 0:
+            // Set distance
+            auto_drive.
+            auto_stage++;
+            break;
+          case 1:
+
+
+        }
+
+
+      /**
         // Remember to reset encoders before starting this or things could get messy
         double error = set_point - (m_drive_left.getEncoder().getPosition()-initial_encoder)*rev_distance_conversion;
 
@@ -233,6 +255,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("position", (m_drive_left.getEncoder().getPosition() - initial_encoder)*rev_distance_conversion);
         SmartDashboard.putNumber("power", outputSpeed);
         SmartDashboard.putNumber("error", error);
+        */
 
         break;
     }
