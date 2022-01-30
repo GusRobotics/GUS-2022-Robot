@@ -59,7 +59,7 @@ public class Robot extends TimedRobot {
 
 
   // Constant Robot Stats (IN FEET)
-  private static final double rev_distance_conversion = 2/11.03;
+  private static final double rev_distance_conversion = 10/42.35;
 
   // INITIALIZE ELECTRONICS
   // Controller
@@ -179,8 +179,8 @@ public class Robot extends TimedRobot {
   double set_point = 10;
 
   // Constant PID drive values
-  final double kP = 0.2;
-  final double kI = 0; // 0.1?
+  final double kP = 0.06;
+  final double kI = 0.01; // 0.1?
   final double kD = 0;
   double integral = 0;
   double derivative = 0;
@@ -207,6 +207,9 @@ public class Robot extends TimedRobot {
         integral += error * dt;
 
         // Potentially reset integral on passing set point, also consider capping it or reseting it if it gets too big
+        if(error * last_error <= 0) {
+          integral = 0;
+        }
 
         // Update derivative
         derivative = (error - last_error)/dt;
@@ -226,7 +229,8 @@ public class Robot extends TimedRobot {
         // [DELAY]
 
         // Print data to shuffleboard (graphing would be great)
-        SmartDashboard.putNumber("encoder value", (m_drive_left.getEncoder().getPosition() - initial_encoder)*rev_distance_conversion);
+        SmartDashboard.putNumber("encoder change, ", (m_drive_left.getEncoder().getPosition() - initial_encoder));
+        SmartDashboard.putNumber("position", (m_drive_left.getEncoder().getPosition() - initial_encoder)*rev_distance_conversion);
         SmartDashboard.putNumber("power", outputSpeed);
         SmartDashboard.putNumber("error", error);
 
