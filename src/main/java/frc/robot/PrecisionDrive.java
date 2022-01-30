@@ -15,7 +15,6 @@ public class PrecisionDrive {
     private CANSparkMax m_drive_right;
     private double set_point;
     private double rev_to_dist;
-    private PigeonIMU imu;
 
     // Tunable PID constants
     public double kP = 0;
