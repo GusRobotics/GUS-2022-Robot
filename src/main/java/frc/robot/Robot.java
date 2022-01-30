@@ -16,13 +16,15 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 // Data Display Tools
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import javax.swing.plaf.basic.BasicComboPopup.InvocationKeyHandler;
+
 // Neo Resources
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 // Talon SRX Resources (Currently not in use)
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.ControlMode;
+// import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+// import com.ctre.phoenix.motorcontrol.ControlMode;
 
 
 /**
@@ -79,7 +81,8 @@ public class Robot extends TimedRobot {
   CANSparkMax m_index = new CANSparkMax(index_ID, MotorType.kBrushless);
 
   // Intake motors
-  TalonSRX m_intake = new TalonSRX(intake_ID);
+  CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
+  // TalonSRX m_intake = new TalonSRX(intake_ID);
   
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
@@ -271,13 +274,16 @@ public class Robot extends TimedRobot {
 
     // Intake
     if(joy_base.getL2Button()) {
-      m_intake.set(ControlMode.PercentOutput, 1);
+      m_intake.set(1);
+      // m_intake.set(ControlMode.PercentOutput, 1);
     }
     else if(joy_base.getR2Button()) {
-      m_intake.set(ControlMode.PercentOutput, -1);
+      m_intake.set(-1);
+      // m_intake.set(ControlMode.PercentOutput, -1);
     }
     else {
-      m_intake.set(ControlMode.PercentOutput, 0);
+      m_intake.set(0);
+      // m_intake.set(ControlMode.PercentOutput, 0);
     }
     
   }
