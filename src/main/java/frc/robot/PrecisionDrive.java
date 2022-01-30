@@ -7,27 +7,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // Rev Resources
 import com.revrobotics.CANSparkMax;
 
-// Cross the Road Resources
-import com.ctre.phoenix.sensors.PigeonIMU;
-
 public class PrecisionDrive {
     private CANSparkMax m_drive_left;
     private CANSparkMax m_drive_right;
     private double set_point;
     private double rev_to_dist;
 
-    // Tunable PID constants
-    public double kP = 0;
-    public double kI = 0;
-    public double kD = 0;
-    public double kIz = 0;
-    public double kFF = 0;
-    public double allowedError = 0.025;
+    // Tunable PID constants (kIz and kFF are additional options)
+    private double kP = 0;
+    private double kI = 0;
+    private double kD = 0;
+    private double allowedError = 0.025;
 
-    // Constant PID constants
-    public final double kMinOutput = -1;
-    public final double kMaxOutput = 1;
-    public double correctTime = 0.125;
+    // Constant PID constants (kMinOutput and kMaxOutput are additional options)
+    private double correctTime = 0.125;
 
     // Global storage
     double last_time;
@@ -59,11 +52,9 @@ public class PrecisionDrive {
         last_error = distance;
 
         // Distance Constants:
-        kP = 0.5;
+        kP = 0.06;
         kI = 0;
         kD = 0;
-        kIz = 0;
-        kFF = 0;
         allowedError = 0.125;
     }
 
