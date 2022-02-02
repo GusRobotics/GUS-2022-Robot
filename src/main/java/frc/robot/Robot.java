@@ -53,8 +53,7 @@ public class Robot extends TimedRobot {
   private static final int shooter1_ID = 8;
   private static final int shooter2_ID = 9;
   private static final int index_ID = 10;
-  // ENSURE THESE ARE SET
-  // private static final int intake_ID = ?;
+  private static final int intake_ID = 11;
   // private static final int pigeon_ID = ?;
 
 
@@ -84,7 +83,7 @@ public class Robot extends TimedRobot {
   CANSparkMax m_index = new CANSparkMax(index_ID, MotorType.kBrushless);
 
   // Intake motors
-  // CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
+  CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
   // TalonSRX m_intake = new TalonSRX(intake_ID);
 
   // Gyro
@@ -209,12 +208,22 @@ public class Robot extends TimedRobot {
         switch(auto_stage) {
           case 0:
             // Set distance
-            auto_drive.
+            auto_drive.setDistanceControl(32.0/12);
             auto_stage++;
             break;
           case 1:
+            // Go set distance
+            boolean done = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+
+            if(done) {
+              auto_stage++;
+            }
+            break;
+          default:
+            SmartDashboard.putString("Status", "Done");
 
 
+            break;
         }
 
 
@@ -293,20 +302,15 @@ public class Robot extends TimedRobot {
     }
 
     // Intake
-    /**
     if(joy_base.getL2Button()) {
       m_intake.set(1);
-      // m_intake.set(ControlMode.PercentOutput, 1);
     }
     else if(joy_base.getR2Button()) {
       m_intake.set(-1);
-      // m_intake.set(ControlMode.PercentOutput, -1);
     }
     else {
       m_intake.set(0);
-      // m_intake.set(ControlMode.PercentOutput, 0);
     }
-  */
   }
 
   /** This function is called once when the robot is disabled. */
