@@ -303,10 +303,10 @@ public class Robot extends TimedRobot {
 
     // Intake
     if(joy_base.getL2Button()) {
-      m_intake.set(1);
+      m_intake.set(0.5);
     }
     else if(joy_base.getR2Button()) {
-      m_intake.set(-1);
+      m_intake.set(-0.5);
     }
     else {
       m_intake.set(0);
