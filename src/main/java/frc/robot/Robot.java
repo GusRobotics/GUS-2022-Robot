@@ -13,6 +13,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
+// Solenoids
+import edu.wpi.first.wpilibj.Solenoid;
+
 // Data Display Tools
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -84,13 +87,15 @@ public class Robot extends TimedRobot {
 
   // Intake motors
   CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
-  // TalonSRX m_intake = new TalonSRX(intake_ID);
 
   // Gyro
   // PigeonIMU gyro = new PigeonIMU(pigeon_ID);
   
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
+
+  // Solenoids
+  
 
 
   /**
