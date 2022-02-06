@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 // Solenoids
-import edu.wpi.first.wpilibj.Solenoid;
+// import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Compressor;
 
 // Data Display Tools
@@ -48,8 +48,7 @@ public class Robot extends TimedRobot {
   // ROBOT CONSTANTS
   // Constant CAN IDs
   // **Make sure to match these when downloading the firmware and other stuff for the neos**
-  // Reserved IDs: (RoboRio, 0), (PDB, 1), (PCM, 13)
-  private static final int pcm_ID = 0;
+  // Reserved IDs: (RoboRio, 0), (PDB, 1)
   private static final int drive_left1_ID = 2;
   private static final int drive_left2_ID = 3;
   private static final int drive_left3_ID = 4; 
@@ -60,6 +59,11 @@ public class Robot extends TimedRobot {
   private static final int shooter2_ID = 9;
   private static final int index_ID = 10;
   private static final int intake_ID = 11;
+  private static final int pcm_ID = 18;
+
+  // Solenoid channels
+  private static final int drive_channel = 0;
+  private static final int intake_channel = 0;
 
   // private static final int pigeon_ID = ?;
 
@@ -100,6 +104,8 @@ public class Robot extends TimedRobot {
 
   // Solenoids
   Compressor compressor = new Compressor(pcm_ID, PneumaticsModuleType.CTREPCM);
+  // Solenoid drive_gear_shift = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, drive_channel);
+  // Solenoid intake_actuator = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, intake_channel);
 
 
   /**
@@ -137,6 +143,7 @@ public class Robot extends TimedRobot {
     // Invert right leader
     m_drive_right.setInverted(true);
 
+    // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
   }
 
@@ -286,6 +293,9 @@ public class Robot extends TimedRobot {
       // .72 flush with wall for high shot
       m_shooter.set(.72);
     }
+    else if(joy_base.getTriangleButton()) {
+      m_shooter.set(.45);
+    }
     else {
       m_shooter.set(0);
     }
@@ -311,6 +321,9 @@ public class Robot extends TimedRobot {
     else {
       m_intake.set(0);
     }
+
+    // Intake actuation
+    // intake_actuator.set(joy_base.getCrossButton());
   }
 
   /** This function is called once when the robot is disabled. */
