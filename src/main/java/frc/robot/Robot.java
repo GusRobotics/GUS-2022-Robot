@@ -164,10 +164,8 @@ public class Robot extends TimedRobot {
   
     /**
   double initial_encoder;
-
   // Target
   double set_point = 10;
-
   // Constant PID drive values
   final double kP = 0.06;
   final double kI = 0; // 0.1?
@@ -230,35 +228,27 @@ public class Robot extends TimedRobot {
       /**
         // Remember to reset encoders before starting this or things could get messy
         double error = set_point - (m_drive_left.getEncoder().getPosition()-initial_encoder)*rev_distance_conversion;
-
         // Find time elapsed
         double dt = Timer.getFPGATimestamp() - last_time;
-
         // Update integral
         integral += error * dt;
-
         // Potentially reset integral on passing set point, also consider capping it or reseting it if it gets too big
         if(error * last_error <= 0) {
           integral = 0;
         }
-
         // Update derivative
         derivative = (error - last_error)/dt;
-
         // Determine output speed
         double outputSpeed = error * kP + integral * kI + derivative * kD;
-
         // Set motors to calculated speed
         m_drive_left.set(outputSpeed);
         m_drive_right.set(outputSpeed);
-
         // Update variables
         last_time = Timer.getFPGATimestamp();
         last_error = error;
         
         // Wait a set time
         Timer.delay(0.005);
-
         // Print data to shuffleboard (graphing would be great)
         SmartDashboard.putNumber("encoder change, ", (m_drive_left.getEncoder().getPosition() - initial_encoder));
         SmartDashboard.putNumber("position", (m_drive_left.getEncoder().getPosition() - initial_encoder)*rev_distance_conversion);
@@ -303,10 +293,10 @@ public class Robot extends TimedRobot {
 
     // Intake
     if(joy_base.getL2Button()) {
-      m_intake.set(0.5);
+      m_intake.set(1);
     }
     else if(joy_base.getR2Button()) {
-      m_intake.set(-0.5);
+      m_intake.set(-1);
     }
     else {
       m_intake.set(0);
