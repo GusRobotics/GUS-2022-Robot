@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 // Solenoids
-// import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Compressor;
 
 // Data Display Tools
@@ -63,7 +63,9 @@ public class Robot extends TimedRobot {
 
   // Solenoid channels
   private static final int drive_channel = 0;
-  private static final int intake_channel = 0;
+  private static final int intake_channel = 1;
+
+  boolean intake_out = false;
 
   // private static final int pigeon_ID = ?;
 
@@ -104,8 +106,8 @@ public class Robot extends TimedRobot {
 
   // Solenoids
   Compressor compressor = new Compressor(pcm_ID, PneumaticsModuleType.CTREPCM);
-  // Solenoid drive_gear_shift = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, drive_channel);
-  // Solenoid intake_actuator = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, intake_channel);
+  Solenoid drive_gear_shift = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, drive_channel);
+  Solenoid intake_actuator = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, intake_channel);
 
 
   /**
@@ -323,7 +325,9 @@ public class Robot extends TimedRobot {
     }
 
     // Intake actuation
-    // intake_actuator.set(joy_base.getCrossButton());
+    
+
+    intake_actuator.set(intake_out);
   }
 
   /** This function is called once when the robot is disabled. */
