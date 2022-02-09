@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // General Resources
 import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
@@ -64,8 +65,11 @@ public class Robot extends TimedRobot {
   // Solenoid channels
   private static final int drive_channel = 0;
   private static final int intake_channel = 1;
-
   boolean intake_out = false;
+
+  // Current limit
+  private static final int drive_current_limit = 50;
+  private static final int intake_current_limit = 30;
 
   // private static final int pigeon_ID = ?;
 
@@ -76,6 +80,7 @@ public class Robot extends TimedRobot {
   // INITIALIZE ELECTRONICS
   // Controller
   private static PS4Controller joy_base = new PS4Controller(0);
+  private static XboxController joy_co = new XboxController(1);
 
   // Add PDB for data reading (optional)
   //PowerDistributionPanel examplePD = new PowerDistribution(0, ModuleType.kAutomatic);
@@ -144,6 +149,20 @@ public class Robot extends TimedRobot {
 
     // Invert right leader
     m_drive_right.setInverted(true);
+
+    // Set current limits
+
+    // Drive current limits
+    m_drive_left.setSmartCurrentLimit(drive_current_limit);
+    m_drive_left2.setSmartCurrentLimit(drive_current_limit);
+    m_drive_left3.setSmartCurrentLimit(drive_current_limit);
+    m_drive_right.setSmartCurrentLimit(drive_current_limit);
+    m_drive_right2.setSmartCurrentLimit(drive_current_limit);
+    m_drive_right3.setSmartCurrentLimit(drive_current_limit);
+
+    // Intake current limit
+    m_intake.setSmartCurrentLimit(intake_current_limit);
+    
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
@@ -325,7 +344,13 @@ public class Robot extends TimedRobot {
     }
 
     // Intake actuation
-    
+    if(joy_co.getAButton()) {
+      intake_out = false;
+    }
+    else if (joy_co.getBButton()) {
+      intake_out = true;
+    }
+
 
     intake_actuator.set(intake_out);
   }
