@@ -5,14 +5,14 @@
 /**
 Intake Controls:
 
-Base Controller:
- - Drive: Joysticks, tank (IMPLEMENTED)
+Base Controller (PS4):
+ - Drive: Joysticks, tank
  - Drive Shift: TOGGLE L1. This should start in high gear (NOT DONE)
- - Intake Actuation: HOLD L2 to extend (NOT DONE)
+ - Intake Actuation: HOLD L2 to extend
  - Index: HOLD R1 for index up (NOT DONE)
 
-Co Controller:
- - Intake - TOGGLE LB for intake, HOLD RB for outtake (NOT DONE)
+Co Controller (Logitech):
+ - Intake - TOGGLE LB for intake, HOLD RB for outtake
  - Shooter - HOLD LT for low, HOLD RT for high (NOT DONE)
  - Index - HOLD D-UP for index up, HOLD D-DOWN for index down (NOT DONE)
  
@@ -82,21 +82,26 @@ public class Robot extends TimedRobot {
   private static final int index_ID = 10;
   private static final int intake_ID = 11;
   private static final int pcm_ID = 18;
-
+ 
   // Solenoid channels
   private static final int drive_channel = 0;
   private static final int intake_channel = 1;
-  boolean intake_out = false;
+  
 
   // Current limit
   private static final int drive_current_limit = 50;
   private static final int intake_current_limit = 25;
-
-  // private static final int pigeon_ID = ?;
-
-
+  private static final int shooter_current_limit = 60;
+  private static final int index_current_limit = 60;
+ 
   // Constant Robot Stats (IN FEET)
   private static final double rev_distance_conversion = 10/42.35;
+ 
+  // Robot Mechanism Status Variables
+   private boolean drive_high_gear = true;
+   private double last_drive_shift = 0;
+   private boolean intake_in = true;
+   private boolean run_intake = false;
 
   // INITIALIZE ELECTRONICS
   // Controller
@@ -180,10 +185,16 @@ public class Robot extends TimedRobot {
     m_drive_right.setSmartCurrentLimit(drive_current_limit);
     m_drive_right2.setSmartCurrentLimit(drive_current_limit);
     m_drive_right3.setSmartCurrentLimit(drive_current_limit);
-
+    
+    // Shooter current limit
+    m_shooter.setSmartCurrentLimit(shooter_current_limit);
+    m_shooter2.setSmartCurrentLimit(shooter_current_limit);
+   
     // Intake current limit
     m_intake.setSmartCurrentLimit(intake_current_limit);
-    
+   
+    // Index current limit
+    m_indexsetSmartCurrentLimit(index_current_limit);
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
@@ -326,8 +337,35 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+   
     // Run drive
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
+   
+    // Drive shift
+
+    // Intake actuation
+    if(joy_base.getL2Button()) {
+      intake_in = false;
+    }
+    else {
+      intake_in = true;
+    }
+    intake_actuator.set(intake_in);
+   
+   // Intake wheels (toggle on, hold to reverse, stop after reverse)
+   if(joy_co.getLeftBumper() || run_intake) {
+      m_intake.set(1);
+      run_intake = true;
+   }
+   if(joy_co.getRightBumper()) {
+      m_intake.set(-1);
+      run_intake = false;
+   }
+   else if(!run_intake) {
+      m_intake.set(0);
+   }
+   
+   
 
     // Shooter
     if(joy_base.getCircleButton()) {
@@ -363,17 +401,6 @@ public class Robot extends TimedRobot {
     else {
       m_intake.set(0);
     }
-
-    // Intake actuation
-    if(joy_co.getAButton()) {
-      intake_out = false;
-    }
-    else if (joy_co.getBButton()) {
-      intake_out = true;
-    }
-
-
-    intake_actuator.set(intake_out);
   }
 
   /** This function is called once when the robot is disabled. */
