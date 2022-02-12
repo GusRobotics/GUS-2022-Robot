@@ -101,7 +101,7 @@ public class Robot extends TimedRobot {
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
    private double last_drive_shift = 0;
-   private boolean intake_in = true;
+   private boolean intake_out = false;
    private boolean run_intake = false;
 
   // INITIALIZE ELECTRONICS
@@ -195,7 +195,7 @@ public class Robot extends TimedRobot {
     m_intake.setSmartCurrentLimit(intake_current_limit);
    
     // Index current limit
-    m_indexsetSmartCurrentLimit(index_current_limit);
+    m_index.setSmartCurrentLimit(index_current_limit);
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
@@ -345,7 +345,7 @@ public class Robot extends TimedRobot {
    // Drive shift
    // private boolean drive_high_gear = true;
    // private double last_drive_shift = 0;
-   if (joy_base.getL2Button()) {
+   if (joy_base.getL1Button()) {
      // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
      if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
        drive_high_gear = (!drive_high_gear);
@@ -356,12 +356,16 @@ public class Robot extends TimedRobot {
 
     // Intake actuation (toggle down, otherwise up)
     if(joy_base.getL2Button()) {
-      intake_in = false;
+      if(!intake_out) {
+        intake_actuator.set(true);
+        intake_out = true;
+      }
     }
     else {
-      intake_in = true;
+      intake_actuator.set(false);
+      intake_out = false;
     }
-    intake_actuator.set(intake_in);
+    
    
    // Intake wheels (toggle on, hold to reverse, stop after reverse)
    if(joy_co.getLeftBumper() || run_intake) {
