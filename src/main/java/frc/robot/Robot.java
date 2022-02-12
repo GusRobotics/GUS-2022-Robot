@@ -2,6 +2,28 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+/**
+Intake Controls: [UPDATE COMPLETE]
+
+Base Controller (PS4):
+ - Drive: Joysticks, tank
+ - Drive Shift: TOGGLE L1. This should start in high gear
+ - Intake Actuation: HOLD L2 to extend
+ - Index: HOLD R1 for index up
+
+Co Controller (Logitech):
+ - Intake - TOGGLE LB for intake, HOLD RB for outtake
+ - Shooter - HOLD LT for low, HOLD RT for high
+ - Index - HOLD D-UP for index up, HOLD D-DOWN for index down
+ 
+Brennan's modifications to suggested controls (most of these are temporary since I have no time for clarification)
+ - Intake out is now a HOLD and not TOGGLE so that the intake is not running constantly if that is not wanted. I did not 
+   have sufficient time to research if running the neo-550 for extended time periods would be bad.
+ - Removed enable index. I am not sure what button or function you wanted there
+ - I do not have FRC software on my PC, there is a notable risk of certain code errors
+ 
+*/
+
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -61,21 +83,26 @@ public class Robot extends TimedRobot {
   private static final int index_ID = 10;
   private static final int intake_ID = 11;
   private static final int pcm_ID = 18;
-
+ 
   // Solenoid channels
   private static final int drive_channel = 0;
   private static final int intake_channel = 1;
-  boolean intake_out = false;
+  
 
   // Current limit
   private static final int drive_current_limit = 50;
-  private static final int intake_current_limit = 30;
-
-  // private static final int pigeon_ID = ?;
-
-
+  private static final int intake_current_limit = 25;
+  private static final int shooter_current_limit = 60;
+  private static final int index_current_limit = 60;
+ 
   // Constant Robot Stats (IN FEET)
   private static final double rev_distance_conversion = 10/42.35;
+ 
+  // Robot Mechanism Status Variables
+   private boolean drive_high_gear = true;
+   private double last_drive_shift = 0;
+   private boolean intake_out = false;
+   private boolean run_intake = false;
 
   // INITIALIZE ELECTRONICS
   // Controller
@@ -159,10 +186,16 @@ public class Robot extends TimedRobot {
     m_drive_right.setSmartCurrentLimit(drive_current_limit);
     m_drive_right2.setSmartCurrentLimit(drive_current_limit);
     m_drive_right3.setSmartCurrentLimit(drive_current_limit);
-
+    
+    // Shooter current limit
+    m_shooter.setSmartCurrentLimit(shooter_current_limit);
+    m_shooter2.setSmartCurrentLimit(shooter_current_limit);
+   
     // Intake current limit
     m_intake.setSmartCurrentLimit(intake_current_limit);
-    
+   
+    // Index current limit
+    m_index.setSmartCurrentLimit(index_current_limit);
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
@@ -305,54 +338,73 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    // Run drive
+   
+    // Run drive (tank)
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
+   
+   // Drive shift
+   // private boolean drive_high_gear = true;
+   // private double last_drive_shift = 0;
+   if (joy_base.getL1Button()) {
+     // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
+     if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
+       drive_high_gear = (!drive_high_gear);
+       last_drive_shift = Timer.getFPGATimestamp();
+     }
+   }
+   drive_gear_shift.set(drive_high_gear);
 
-    // Shooter
-    if(joy_base.getCircleButton()) {
-      // .45, 7ft to back bumper
-      // .72 flush with wall for high shot
-      m_shooter.set(.72);
+    // Intake actuation (toggle down, otherwise up)
+    if(joy_base.getL2Button()) {
+      if(!intake_out) {
+        intake_actuator.set(true);
+        intake_out = true;
+      }
     }
-    else if(joy_base.getTriangleButton()) {
+    else {
+      intake_actuator.set(false);
+      intake_out = false;
+    }
+    
+   
+   // Intake wheels (toggle on, hold to reverse, stop after reverse)
+   if(joy_co.getLeftBumper() || run_intake) {
+      m_intake.set(1);
+      run_intake = true;
+   }
+   if(joy_co.getRightBumper()) {
+      m_intake.set(-1);
+      run_intake = false;
+   }
+   else if(!run_intake) {
+      m_intake.set(0);
+   }
+   
+    // Shooter
+    if(joy_co.getLeftTriggerAxis() > 0.8) {
+      // Low Power
       m_shooter.set(.45);
+    }
+    else if(joy_co.getRightTriggerAxis() > 0.8) {
+      // High Power
+      m_shooter.set(.72);
     }
     else {
       m_shooter.set(0);
     }
 
     // Index
-    if(joy_base.getL1Button()) {
+    if(joy_co.getPOV() == 0 || joy_base.getR1Button()) {
+      // D-UP --> index in
       m_index.set(0.8);
     }
-    else if(joy_base.getR1Button()) {
+    else if(joy_co.getPOV() == 180) {
+     // D-DOWN --> index out
       m_index.set(-1);
     }
     else {
       m_index.set(0);
     }
-
-    // Intake
-    if(joy_base.getL2Button()) {
-      m_intake.set(1);
-    }
-    else if(joy_base.getR2Button()) {
-      m_intake.set(-1);
-    }
-    else {
-      m_intake.set(0);
-    }
-
-    // Intake actuation
-    if(joy_co.getAButton()) {
-      intake_out = false;
-    }
-    else if (joy_co.getBButton()) {
-      intake_out = true;
-    }
-
-
-    intake_actuator.set(intake_out);
   }
 
   /** This function is called once when the robot is disabled. */
