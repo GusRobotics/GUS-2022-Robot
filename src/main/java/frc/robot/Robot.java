@@ -2,6 +2,27 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+/**
+Intake Controls:
+
+Base Controller:
+ - Drive: Joysticks, tank (IMPLEMENTED)
+ - Drive Shift: TOGGLE L1. This should start in high gear (NOT DONE)
+ - Intake Actuation: HOLD L2 to extend (NOT DONE)
+ - Index: HOLD R1 for index up (NOT DONE)
+
+Co Controller:
+ - Intake - TOGGLE LB for intake, HOLD RB for outtake (NOT DONE)
+ - Shooter - HOLD LT for low, HOLD RT for high (NOT DONE)
+ - Index - HOLD D-UP for index up, HOLD D-DOWN for index down (NOT DONE)
+ 
+Brennan's modifications to suggested controls (most of these are temporary since I have no time for clarification)
+ - Intake out is now a HOLD and not TOGGLE so that the intake is not running constantly if that is not wanted. I did not 
+   have sufficient time to research if running the neo-550 for extended time periods would be bad.
+ - Removed enable index. I am not sure what button or function you wanted there
+ 
+*/
+
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -69,7 +90,7 @@ public class Robot extends TimedRobot {
 
   // Current limit
   private static final int drive_current_limit = 50;
-  private static final int intake_current_limit = 30;
+  private static final int intake_current_limit = 25;
 
   // private static final int pigeon_ID = ?;
 
