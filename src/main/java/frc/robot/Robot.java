@@ -3,23 +3,24 @@
 // the WPILib BSD license file in the root directory of this project.
 
 /**
-Intake Controls:
+Intake Controls: [UPDATE COMPLETE]
 
 Base Controller (PS4):
  - Drive: Joysticks, tank
- - Drive Shift: TOGGLE L1. This should start in high gear (NOT DONE)
+ - Drive Shift: TOGGLE L1. This should start in high gear
  - Intake Actuation: HOLD L2 to extend
- - Index: HOLD R1 for index up (NOT DONE)
+ - Index: HOLD R1 for index up
 
 Co Controller (Logitech):
  - Intake - TOGGLE LB for intake, HOLD RB for outtake
- - Shooter - HOLD LT for low, HOLD RT for high (NOT DONE)
- - Index - HOLD D-UP for index up, HOLD D-DOWN for index down (NOT DONE)
+ - Shooter - HOLD LT for low, HOLD RT for high
+ - Index - HOLD D-UP for index up, HOLD D-DOWN for index down
  
 Brennan's modifications to suggested controls (most of these are temporary since I have no time for clarification)
  - Intake out is now a HOLD and not TOGGLE so that the intake is not running constantly if that is not wanted. I did not 
    have sufficient time to research if running the neo-550 for extended time periods would be bad.
  - Removed enable index. I am not sure what button or function you wanted there
+ - I do not have FRC software on my PC, there is a notable risk of certain code errors
  
 */
 
@@ -338,12 +339,22 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
    
-    // Run drive
+    // Run drive (tank)
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
    
-    // Drive shift
+   // Drive shift
+   // private boolean drive_high_gear = true;
+   // private double last_drive_shift = 0;
+   if (joy_base.getL2Button()) {
+     // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
+     if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
+       drive_high_gear = (!drive_high_gear);
+       last_drive_shift = Timer.getFPGATimestamp();
+     }
+   }
+   drive_gear_shift.set(drive_high_gear);
 
-    // Intake actuation
+    // Intake actuation (toggle down, otherwise up)
     if(joy_base.getL2Button()) {
       intake_in = false;
     }
@@ -365,41 +376,30 @@ public class Robot extends TimedRobot {
       m_intake.set(0);
    }
    
-   
-
     // Shooter
-    if(joy_base.getCircleButton()) {
-      // .45, 7ft to back bumper
-      // .72 flush with wall for high shot
-      m_shooter.set(.72);
-    }
-    else if(joy_base.getTriangleButton()) {
+    if(joy_co.getLeftTriggerAxis() > 0.8) {
+      // Low Power
       m_shooter.set(.45);
+    }
+    else if(joy_co.getRightTriggerAxis() > 0.8) {
+      // High Power
+      m_shooter.set(.72);
     }
     else {
       m_shooter.set(0);
     }
 
     // Index
-    if(joy_base.getL1Button()) {
+    if(joy_co.getPOV() == 0 || joy_base.getR1Button()) {
+      // D-UP --> index in
       m_index.set(0.8);
     }
-    else if(joy_base.getR1Button()) {
+    else if(joy_co.getPOV() == 180) {
+     // D-DOWN --> index out
       m_index.set(-1);
     }
     else {
       m_index.set(0);
-    }
-
-    // Intake
-    if(joy_base.getL2Button()) {
-      m_intake.set(1);
-    }
-    else if(joy_base.getR2Button()) {
-      m_intake.set(-1);
-    }
-    else {
-      m_intake.set(0);
     }
   }
 
