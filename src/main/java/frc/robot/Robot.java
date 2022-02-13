@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.AnalogInput;
 
 // Solenoids
 import edu.wpi.first.wpilibj.Solenoid;
@@ -85,22 +86,32 @@ public class Robot extends TimedRobot {
   // Solenoid channels
   private static final int drive_channel = 0;
   private static final int intake_channel = 1;
+
+  // Analog channels
+  private static final int dist1_channel = 0;
   
 
   // Current limit
   private static final int drive_current_limit = 50;
   private static final int intake_current_limit = 25;
-  private static final int shooter_current_limit = 60;
-  private static final int index_current_limit = 60;
+  private static final int shooter_current_limit = 50;
+  private static final int index_current_limit = 50;
  
   // Constant Robot Stats (IN FEET)
   private static final double rev_distance_conversion = 10/42.35;
+  private static final int dist1_threshold = 2000;
  
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
    private double last_drive_shift = 0;
    private boolean intake_out = false;
    private boolean run_intake = false;
+   private boolean intake_released = false;
+   private boolean index_on = false;
+   private boolean shooter_on = false;
+
+   // General time stamp in global scope because of iterative stuff
+   private double time_stamp = 0;
 
   // INITIALIZE ELECTRONICS
   // Controller
@@ -130,6 +141,9 @@ public class Robot extends TimedRobot {
 
   // Gyro
   // PigeonIMU gyro = new PigeonIMU(pigeon_ID);
+
+  // Infrared distance sensor
+  AnalogInput dist_sensor_1 = new AnalogInput(dist1_channel);
   
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
@@ -299,7 +313,21 @@ public class Robot extends TimedRobot {
             break;
           /**
           case 2:
-            
+            // Init for drive for time
+            time_stamp = Timer.getFPGATimestamp();
+            auto_stage++;
+            break;
+          case 3:
+            // Drive for time (5 seconds)
+            if(Timer.getFPGATimestamp() - time_stamp > 5) {
+              m_drive_left.set(0.75);
+              m_drive_right.set(0.75);
+            }
+            else {
+              m_drive_left.set(0);
+              m_drive_right.set(0);
+              auto_stage++;
+            }
            */
         }
 
@@ -341,7 +369,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    run_intake = false;
+  }
 
   /** This function is called periodically during operator control. */
   @Override
@@ -376,10 +406,20 @@ public class Robot extends TimedRobot {
     
    
    // Intake wheels (toggle on, hold to reverse, stop after reverse)
-   if(joy_co.getLeftBumper() || run_intake) {
-      m_intake.set(1);
-      run_intake = true;
+   if(joy_co.getLeftBumper() && intake_released) {
+      run_intake = (!run_intake);
+      intake_released = false;
    }
+   else if(!joy_co.getLeftBumper()){
+     intake_released = true;
+   }
+
+   // Intake when toggled
+   if(run_intake) {
+     m_intake.set(1);
+   }
+
+   // Outtake when pressed 
    if(joy_co.getRightBumper()) {
       m_intake.set(-1);
       run_intake = false;
@@ -392,27 +432,51 @@ public class Robot extends TimedRobot {
     if(joy_co.getLeftTriggerAxis() > 0.8) {
       // Low Power
       m_shooter.set(.45);
+      shooter_on = true;
     }
     else if(joy_co.getRightTriggerAxis() > 0.8) {
       // High Power
       m_shooter.set(.72);
+      shooter_on = true;
     }
     else {
       m_shooter.set(0);
+      shooter_on = false;
     }
 
     // Index
-    if(joy_co.getPOV() == 0 || joy_base.getR1Button()) {
-      // D-UP --> index in
-      m_index.set(0.8);
+    if(joy_base.getR1Button()) {
+      // Base Controls
+      if(dist_sensor_1.getValue() < dist1_threshold) {
+        m_index.set(0.8);
+      }
+      else if (shooter_on) {
+        m_index.set(0.8);
+      }
+      else {
+        m_index.set(0);
+      }
     }
     else if(joy_co.getPOV() == 180) {
-     // D-DOWN --> index out
-      m_index.set(-1);
+     // Co - Reverse
+      m_index.set(-1); 
+    }
+    else if(joy_co.getBackButton() && dist_sensor_1.getValue() < dist1_threshold && !index_on) {
+      index_on = true;
+    }
+    else if(index_on) {
+      if(dist_sensor_1.getValue() >= dist1_threshold) {
+        index_on = false;
+      }
+      else {
+        m_index.set(0.8);
+      }
     }
     else {
       m_index.set(0);
     }
+
+
   }
 
   /** This function is called once when the robot is disabled. */
@@ -421,7 +485,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
+  }
 
   /** This function is called once when test mode is enabled. */
   @Override
