@@ -4,13 +4,11 @@
 
 /**
 Intake Controls: [UPDATE COMPLETE]
-
 Base Controller (PS4):
  - Drive: Joysticks, tank
  - Drive Shift: TOGGLE L1. This should start in high gear
  - Intake Actuation: HOLD L2 to extend
  - Index: HOLD R1 for index up
-
 Co Controller (Logitech):
  - Intake - TOGGLE LB for intake, HOLD RB for outtake
  - Shooter - HOLD LT for low, HOLD RT for high
