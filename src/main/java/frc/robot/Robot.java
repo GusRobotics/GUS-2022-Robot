@@ -274,13 +274,21 @@ public class Robot extends TimedRobot {
       default:
         switch(auto_stage) {
           case 0:
-            // Set distance
+            // Set distance to drive back and get ball
             auto_drive.setDistanceControl(32.0/12);
+
+            // Actuate intake
+            intake_actuator.set(true);
+
+            // Turn intake on
+            m_intake.set(1);
+
             auto_stage++;
             break;
           case 1:
-            // Go set distance
+            // Go back and get ball
             boolean done = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+
 
             if(done) {
               auto_stage++;
@@ -288,9 +296,11 @@ public class Robot extends TimedRobot {
             break;
           default:
             SmartDashboard.putString("Status", "Done");
-
-
             break;
+          /**
+          case 2:
+            
+           */
         }
 
 
