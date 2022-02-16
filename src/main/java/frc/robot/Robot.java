@@ -99,7 +99,7 @@ public class Robot extends TimedRobot {
  
   // Constant Robot Stats (IN FEET)
   private static final double rev_distance_conversion = 10/42.35;
-  private static final int dist1_threshold = 2000;
+  private static final int dist1_threshold = 1100;
  
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
@@ -208,6 +208,8 @@ public class Robot extends TimedRobot {
    
     // Index current limit
     m_index.setSmartCurrentLimit(index_current_limit);
+
+    m_index.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
