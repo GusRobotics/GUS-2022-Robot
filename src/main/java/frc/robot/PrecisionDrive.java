@@ -23,11 +23,11 @@ public class PrecisionDrive {
     private double correctTime = 0.125;
 
     // Global storage
-    double last_time;
-    double integral;
-    double last_error;
-    double first_correct;
-    boolean correct;
+    private double last_time;
+    private double integral;
+    private double last_error;
+    private double first_correct;
+    private boolean correct;
 
     public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, double conversion) {
         m_drive_left = m_left;
@@ -52,7 +52,9 @@ public class PrecisionDrive {
         last_error = distance;
 
         // Distance Constants:
-        kP = 0.06;
+
+        // kp = 0.06 on floor for long distance
+        kP = 0.2;
         kI = 0;
         kD = 0;
         allowedError = 0.125;
@@ -90,25 +92,26 @@ public class PrecisionDrive {
 
         // Print data to shuffleboard (graphing would be great)
         SmartDashboard.putNumber("value", val);
+        SmartDashboard.putNumber("target", set_point);
         SmartDashboard.putNumber("power", outputSpeed);
         SmartDashboard.putNumber("error", error);
 
+        // Check if the system is in the correct range
         if(Math.abs(error) < allowedError) {
             if(correct) {
                 // Wait until stable
                 if(Timer.getFPGATimestamp() - first_correct >= correctTime) {
                     return true;
                 }
-                else {
-                    // Indicate position is in correct range
-                    correct = true;
-                    first_correct = Timer.getFPGATimestamp();
-                }
             }
             else {
-                correct = false;
+                // Just entered region - start count to determine stability
+                correct = true;
+                first_correct = Timer.getFPGATimestamp();
             }
-            
+        }
+        else {
+            correct = false;
         }
         return false;
     }

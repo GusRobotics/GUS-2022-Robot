@@ -19,7 +19,6 @@ Brennan's modifications to suggested controls (most of these are temporary since
    have sufficient time to research if running the neo-550 for extended time periods would be bad.
  - Removed enable index. I am not sure what button or function you wanted there
  - I do not have FRC software on my PC, there is a notable risk of certain code errors
- 
 */
 
 package frc.robot;
@@ -61,6 +60,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
+
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
@@ -99,7 +99,7 @@ public class Robot extends TimedRobot {
  
   // Constant Robot Stats (IN FEET)
   private static final double rev_distance_conversion = 10/42.35;
-  private static final int dist1_threshold = 1100;
+  private static final int dist1_threshold = 1000;
  
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
@@ -109,6 +109,7 @@ public class Robot extends TimedRobot {
    private boolean intake_released = false;
    private boolean index_on = false;
    private boolean shooter_on = false;
+   private boolean intake_actuation_primed = true;
 
    // General time stamp in global scope because of iterative stuff
    private double time_stamp = 0;
@@ -291,13 +292,13 @@ public class Robot extends TimedRobot {
         switch(auto_stage) {
           case 0:
             // Set distance to drive back and get ball
-            auto_drive.setDistanceControl(32.0/12);
+            auto_drive.setDistanceControl(-32.0/12);
 
             // Actuate intake
             intake_actuator.set(true);
 
             // Turn intake on
-            m_intake.set(1);
+            // m_intake.set(1);
 
             auto_stage++;
             break;
@@ -305,6 +306,7 @@ public class Robot extends TimedRobot {
             // Go back and get ball
             boolean done = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
 
+            SmartDashboard.putBoolean("Done", done);
 
             if(done) {
               auto_stage++;
