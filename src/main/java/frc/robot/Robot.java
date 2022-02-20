@@ -96,6 +96,8 @@ public class Robot extends TimedRobot {
   // Constant Robot Stats (IN FEET)
   private static final double rev_distance_conversion = 10/42.35;
   private static final int dist1_threshold = 1000;
+  private static final double low_shot_power = 0.42;
+  private static final double high_shot_power = 0.72;
  
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
@@ -289,7 +291,7 @@ public class Robot extends TimedRobot {
         switch(auto_stage) {
           case 0:
             // Set distance to drive back and get ball
-            auto_drive.setDistanceControl(-32.0/12);
+            auto_drive.setDistanceControl(-3);
 
             // Actuate intake
             intake_actuator.set(true);
@@ -297,39 +299,131 @@ public class Robot extends TimedRobot {
             // Turn intake on
             m_intake.set(1);
 
+            // High gear
+            drive_gear_shift.set(false);
+
             auto_stage++;
             break;
+
           case 1:
             // Go back and get ball
-            boolean done = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+            boolean done2 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
 
-            SmartDashboard.putBoolean("Done", done);
+            SmartDashboard.putBoolean("Done c2", done2);
 
-            if(done) {
+            if(done2) {
+              auto_drive.setDistanceControl(5.5);
+              m_intake.set(0);
+              intake_actuator.set(false);
               auto_stage++;
             }
             break;
-          default:
-            SmartDashboard.putString("Status", "Done");
-            break;
-          /**
+
           case 2:
-            // Init for drive for time
-            time_stamp = Timer.getFPGATimestamp();
-            auto_stage++;
-            break;
-          case 3:
-            // Drive for time (5 seconds)
-            if(Timer.getFPGATimestamp() - time_stamp > 5) {
-              m_drive_left.set(0.75);
-              m_drive_right.set(0.75);
-            }
-            else {
+            // Go back and get ball
+            boolean done3 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+
+            SmartDashboard.putBoolean("Done c3", done3);
+
+            if(done3) {
+              time_stamp = Timer.getFPGATimestamp();
+              m_shooter.set(low_shot_power);
               m_drive_left.set(0);
               m_drive_right.set(0);
               auto_stage++;
             }
-           */
+            break;
+
+          case 3:
+            // Turn
+            if(Timer.getFPGATimestamp() - time_stamp < 0.2) {
+              m_drive_left.set(-0.2);
+              m_drive_right.set(0.2);
+            }
+            else {
+              m_drive_left.set(0);
+              m_drive_left.set(0);
+              auto_stage++;
+            }
+            break;
+
+          case 4:
+            // Drive for time (0.5 seconds)
+            double time_elapsed = Timer.getFPGATimestamp() - time_stamp;
+
+            if(time_elapsed < 0.5) {
+              double p = 0.6 - 0.3 * time_elapsed;
+              m_drive_left.set(p);
+              m_drive_right.set(p);
+            }
+            else if(time_elapsed < 1.25){
+              m_drive_left.set(0);
+              m_drive_right.set(0);
+            }
+            else {
+              time_stamp = Timer.getFPGATimestamp();
+              auto_stage++;
+            }
+            break;
+
+          case 5:
+            if (Timer.getFPGATimestamp() - time_stamp < 2) {
+              m_index.set(0.75);
+            }
+            else {
+              m_index.set(0);
+              m_shooter.set(0);
+              auto_drive.setDistanceControl(-2.6);
+              auto_stage++;
+            }
+            break;
+
+          case 6:
+            // Go back to align with balls 3 and 4
+            boolean done6 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+
+            SmartDashboard.putBoolean("Done c6", done6);
+
+            if(done6) {
+              time_stamp = Timer.getFPGATimestamp();
+              m_drive_left.set(0);
+              m_drive_right.set(0);
+              auto_stage++;
+            }
+            break;
+
+          case 7:
+            // Turn
+            if(Timer.getFPGATimestamp() - time_stamp < 0.3) {
+              m_drive_left.set(-0.3);
+              m_drive_right.set(0.3);
+            }
+            else {
+              m_drive_left.set(0);
+              m_drive_left.set(0);
+              m_intake.set(1);
+              intake_actuator.set(true);
+              auto_drive.setDistanceControl(-1);
+              auto_stage++;
+            }
+            break;
+          case 8:
+            // Drive forwards for 10 feet
+            boolean done8 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+
+            SmartDashboard.putBoolean("Done c8", done8);
+
+            if(done8) {
+              m_drive_left.set(0);
+              m_drive_right.set(0);
+              m_intake.set(0);
+              auto_stage++;
+            }
+            break;
+
+          default:
+            SmartDashboard.putString("Status", "Done");
+            break;
         }
 
 
@@ -436,12 +530,12 @@ public class Robot extends TimedRobot {
     // Shooter
     if(joy_co.getLeftTriggerAxis() > 0.8) {
       // Low Power
-      m_shooter.set(.45);
+      m_shooter.set(low_shot_power);
       shooter_on = true;
     }
     else if(joy_co.getRightTriggerAxis() > 0.8) {
       // High Power
-      m_shooter.set(.72);
+      m_shooter.set(high_shot_power);
       shooter_on = true;
     }
     else {

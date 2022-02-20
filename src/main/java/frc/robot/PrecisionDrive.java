@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.CAN;
 // Default resources
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -58,6 +59,16 @@ public class PrecisionDrive {
         kI = 0;
         kD = 0;
         allowedError = 0.125;
+    }
+
+    /**
+     * PID Control for driving in a straight line with motors controlled seperatedly to combat drift
+     * @param leftDrive - left motor
+     * @param rightDrive - right motor
+     * @return - true if the loop is done for both motors, false if it is not
+     */
+    public boolean pidStraight(CANSparkMax leftDrive, CANSparkMax rightDrive) {
+        return true;
     }
 
     /** Iterative function that adjusts power to get the drive train to its set point
