@@ -10,15 +10,11 @@ Base Controller (PS4):
  - Intake Actuation: HOLD L2 to extend
  - Index: HOLD R1 for index up
 Co Controller (Logitech):
- - Intake - TOGGLE LB for intake, HOLD RB for outtake
+ - Intake - TOGGLE LB for intake/off, HOLD BACK for outtake
  - Shooter - HOLD LT for low, HOLD RT for high
- - Index - HOLD D-UP for index up, HOLD D-DOWN for index down
- 
-Brennan's modifications to suggested controls (most of these are temporary since I have no time for clarification)
- - Intake out is now a HOLD and not TOGGLE so that the intake is not running constantly if that is not wanted. I did not 
-   have sufficient time to research if running the neo-550 for extended time periods would be bad.
- - Removed enable index. I am not sure what button or function you wanted there
- - I do not have FRC software on my PC, there is a notable risk of certain code errors
+ - Index - RB to index to point, HOLD D-DOWN for index down
+
+ - Mode button issues?
 */
 
 package frc.robot;
@@ -116,6 +112,7 @@ public class Robot extends TimedRobot {
 
   // INITIALIZE ELECTRONICS
   // Controller
+  //x-box: private static XboxController joy_base = new XboxController(0);
   private static PS4Controller joy_base = new PS4Controller(0);
   private static XboxController joy_co = new XboxController(1);
 
@@ -298,7 +295,7 @@ public class Robot extends TimedRobot {
             intake_actuator.set(true);
 
             // Turn intake on
-            // m_intake.set(1);
+            m_intake.set(1);
 
             auto_stage++;
             break;
@@ -382,11 +379,13 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
    
     // Run drive (tank)
+    // no change if controller changes
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
    
    // Drive shift
    // private boolean drive_high_gear = true;
    // private double last_drive_shift = 0;
+   // x-box: if (joy_base.getLeftBumper()) { 
    if (joy_base.getL1Button()) {
      // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
      if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
@@ -397,6 +396,8 @@ public class Robot extends TimedRobot {
    drive_gear_shift.set(drive_high_gear);
 
     // Intake actuation (toggle down, otherwise up)
+
+    //x-box: if (joy_base.getLeftTriggerAxis() > 0.8) {
     if(joy_base.getL2Button()) {
       if(!intake_out) {
         intake_actuator.set(true);
@@ -424,7 +425,7 @@ public class Robot extends TimedRobot {
    }
 
    // Outtake when pressed 
-   if(joy_co.getRightBumper()) {
+   if(joy_co.getBackButton()) {
       m_intake.set(-1);
       run_intake = false;
    }
@@ -449,6 +450,7 @@ public class Robot extends TimedRobot {
     }
 
     // Index
+    //x-box: if(joy_base.getRightBumper()) {
     if(joy_base.getR1Button()) {
       // Base Controls
       if(dist_sensor_1.getValue() < dist1_threshold) {
@@ -465,7 +467,7 @@ public class Robot extends TimedRobot {
      // Co - Reverse
       m_index.set(-1); 
     }
-    else if(joy_co.getBackButton() && dist_sensor_1.getValue() < dist1_threshold && !index_on) {
+    else if(joy_co.getRightBumper() && dist_sensor_1.getValue() < dist1_threshold && !index_on) {
       index_on = true;
     }
     else if(index_on) {
