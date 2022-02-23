@@ -77,6 +77,8 @@ public class PrecisionDrive {
      * Rotations (degrees): gyro value (no transformation)
      * @return boolean complete that indicates if the error is within an acceptable range
     */
+
+    // CANSparkMax motor
     public boolean pidControl(double val) {
         double error = set_point - val;
         double dt = Timer.getFPGATimestamp() - last_time;

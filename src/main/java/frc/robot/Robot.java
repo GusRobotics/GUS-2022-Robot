@@ -63,41 +63,6 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  // ROBOT CONSTANTS
-  // Constant CAN IDs
-  // **Make sure to match these when downloading the firmware and other stuff for the neos**
-  // Reserved IDs: (RoboRio, 0), (PDB, 1)
-  private static final int drive_left1_ID = 2;
-  private static final int drive_left2_ID = 3;
-  private static final int drive_left3_ID = 4; 
-  private static final int drive_right1_ID = 5;
-  private static final int drive_right2_ID = 6;
-  private static final int drive_right3_ID = 7;
-  private static final int shooter1_ID = 8;
-  private static final int shooter2_ID = 9;
-  private static final int index_ID = 10;
-  private static final int intake_ID = 11;
-  private static final int pcm_ID = 18;
- 
-  // Solenoid channels
-  private static final int drive_channel = 0;
-  private static final int intake_channel = 1;
-
-  // Analog channels
-  private static final int dist1_channel = 0;
-  
-
-  // Current limit
-  private static final int drive_current_limit = 50;
-  private static final int intake_current_limit = 25;
-  private static final int shooter_current_limit = 50;
-  private static final int index_current_limit = 50;
- 
-  // Constant Robot Stats (IN FEET)
-  private static final double rev_distance_conversion = 10/42.35;
-  private static final int dist1_threshold = 1000;
-  private static final double low_shot_power = 0.42;
-  private static final double high_shot_power = 0.72;
  
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
@@ -122,36 +87,36 @@ public class Robot extends TimedRobot {
   //PowerDistributionPanel examplePD = new PowerDistribution(0, ModuleType.kAutomatic);
 
   // Drive motors
-  CANSparkMax m_drive_left = new CANSparkMax(drive_left1_ID, MotorType.kBrushless);
-  CANSparkMax m_drive_left2 = new CANSparkMax(drive_left2_ID, MotorType.kBrushless);
-  CANSparkMax m_drive_left3 = new CANSparkMax(drive_left3_ID, MotorType.kBrushless);
-  CANSparkMax m_drive_right = new CANSparkMax(drive_right1_ID, MotorType.kBrushless);
-  CANSparkMax m_drive_right2 = new CANSparkMax(drive_right2_ID, MotorType.kBrushless);
-  CANSparkMax m_drive_right3 = new CANSparkMax(drive_right3_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_left = new CANSparkMax(config.drive_left1_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_left2 = new CANSparkMax(config.drive_left2_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_left3 = new CANSparkMax(config.drive_left3_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_right = new CANSparkMax(config.drive_right1_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_right2 = new CANSparkMax(config.drive_right2_ID, MotorType.kBrushless);
+  CANSparkMax m_drive_right3 = new CANSparkMax(config.drive_right3_ID, MotorType.kBrushless);
 
   // Shooter motors
-  CANSparkMax m_shooter = new CANSparkMax(shooter1_ID, MotorType.kBrushless);
-  CANSparkMax m_shooter2 = new CANSparkMax(shooter2_ID, MotorType.kBrushless);
+  CANSparkMax m_shooter = new CANSparkMax(config.shooter1_ID, MotorType.kBrushless);
+  CANSparkMax m_shooter2 = new CANSparkMax(config.shooter2_ID, MotorType.kBrushless);
 
   // Index motor
-  CANSparkMax m_index = new CANSparkMax(index_ID, MotorType.kBrushless);
+  CANSparkMax m_index = new CANSparkMax(config.index_ID, MotorType.kBrushless);
 
   // Intake motors
-  CANSparkMax m_intake = new CANSparkMax(intake_ID, MotorType.kBrushless);
+  CANSparkMax m_intake = new CANSparkMax(config.intake_ID, MotorType.kBrushless);
 
   // Gyro
   // PigeonIMU gyro = new PigeonIMU(pigeon_ID);
 
   // Infrared distance sensor
-  AnalogInput dist_sensor_1 = new AnalogInput(dist1_channel);
+  AnalogInput dist_sensor_1 = new AnalogInput(config.index_dist_sensor_channel);
   
   // Initialize drive train
   DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
 
   // Solenoids
-  Compressor compressor = new Compressor(pcm_ID, PneumaticsModuleType.CTREPCM);
-  Solenoid drive_gear_shift = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, drive_channel);
-  Solenoid intake_actuator = new Solenoid(pcm_ID, PneumaticsModuleType.CTREPCM, intake_channel);
+  Compressor compressor = new Compressor(config.pcm_ID, PneumaticsModuleType.CTREPCM);
+  Solenoid drive_gear_shift = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.drive_channel);
+  Solenoid intake_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.intake_channel);
 
 
   /**
@@ -192,22 +157,22 @@ public class Robot extends TimedRobot {
     // Set current limits
 
     // Drive current limits
-    m_drive_left.setSmartCurrentLimit(drive_current_limit);
-    m_drive_left2.setSmartCurrentLimit(drive_current_limit);
-    m_drive_left3.setSmartCurrentLimit(drive_current_limit);
-    m_drive_right.setSmartCurrentLimit(drive_current_limit);
-    m_drive_right2.setSmartCurrentLimit(drive_current_limit);
-    m_drive_right3.setSmartCurrentLimit(drive_current_limit);
+    m_drive_left.setSmartCurrentLimit(config.drive_current_limit);
+    m_drive_left2.setSmartCurrentLimit(config.drive_current_limit);
+    m_drive_left3.setSmartCurrentLimit(config.drive_current_limit);
+    m_drive_right.setSmartCurrentLimit(config.drive_current_limit);
+    m_drive_right2.setSmartCurrentLimit(config.drive_current_limit);
+    m_drive_right3.setSmartCurrentLimit(config.drive_current_limit);
     
     // Shooter current limit
-    m_shooter.setSmartCurrentLimit(shooter_current_limit);
-    m_shooter2.setSmartCurrentLimit(shooter_current_limit);
+    m_shooter.setSmartCurrentLimit(config.shooter_current_limit);
+    m_shooter2.setSmartCurrentLimit(config.shooter_current_limit);
    
     // Intake current limit
-    m_intake.setSmartCurrentLimit(intake_current_limit);
+    m_intake.setSmartCurrentLimit(config.intake_current_limit);
    
     // Index current limit
-    m_index.setSmartCurrentLimit(index_current_limit);
+    m_index.setSmartCurrentLimit(config.index_current_limit);
 
     m_index.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
@@ -271,7 +236,7 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
 
-    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right, rev_distance_conversion);
+    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right, config.rev_feet_conversion);
     auto_stage = 0;
 
     // Reset encoder
@@ -307,7 +272,7 @@ public class Robot extends TimedRobot {
 
           case 1:
             // Go back and get ball
-            boolean done2 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+            boolean done2 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
 
             SmartDashboard.putBoolean("Done c2", done2);
 
@@ -321,13 +286,13 @@ public class Robot extends TimedRobot {
 
           case 2:
             // Go back and get ball
-            boolean done3 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+            boolean done3 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
 
             SmartDashboard.putBoolean("Done c3", done3);
 
             if(done3) {
               time_stamp = Timer.getFPGATimestamp();
-              m_shooter.set(low_shot_power);
+              m_shooter.set(config.low_shot_power);
               m_drive_left.set(0);
               m_drive_right.set(0);
               auto_stage++;
@@ -380,7 +345,7 @@ public class Robot extends TimedRobot {
 
           case 6:
             // Go back to align with balls 3 and 4
-            boolean done6 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+            boolean done6 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
 
             SmartDashboard.putBoolean("Done c6", done6);
 
@@ -409,7 +374,7 @@ public class Robot extends TimedRobot {
             break;
           case 8:
             // Drive forwards for 10 feet
-            boolean done8 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*rev_distance_conversion);
+            boolean done8 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
 
             SmartDashboard.putBoolean("Done c8", done8);
 
@@ -530,12 +495,12 @@ public class Robot extends TimedRobot {
     // Shooter
     if(joy_co.getLeftTriggerAxis() > 0.8) {
       // Low Power
-      m_shooter.set(low_shot_power);
+      m_shooter.set(config.low_shot_power);
       shooter_on = true;
     }
     else if(joy_co.getRightTriggerAxis() > 0.8) {
       // High Power
-      m_shooter.set(high_shot_power);
+      m_shooter.set(config.high_shot_power);
       shooter_on = true;
     }
     else {
@@ -547,7 +512,7 @@ public class Robot extends TimedRobot {
     //x-box: if(joy_base.getRightBumper()) {
     if(joy_base.getR1Button()) {
       // Base Controls
-      if(dist_sensor_1.getValue() < dist1_threshold) {
+      if(dist_sensor_1.getValue() < config.dist1_threshold) {
         m_index.set(0.8);
       }
       else if (shooter_on) {
@@ -561,11 +526,11 @@ public class Robot extends TimedRobot {
      // Co - Reverse
       m_index.set(-1); 
     }
-    else if(joy_co.getRightBumper() && dist_sensor_1.getValue() < dist1_threshold && !index_on) {
+    else if(joy_co.getRightBumper() && dist_sensor_1.getValue() < config.dist1_threshold && !index_on) {
       index_on = true;
     }
     else if(index_on) {
-      if(dist_sensor_1.getValue() >= dist1_threshold) {
+      if(dist_sensor_1.getValue() >= config.dist1_threshold) {
         index_on = false;
       }
       else {
