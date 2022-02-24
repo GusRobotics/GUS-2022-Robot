@@ -30,10 +30,10 @@ public class PrecisionDrive {
     private double first_correct;
     private boolean correct;
 
-    public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, double conversion) {
+    public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right) {
+        // Store motors
         m_drive_left = m_left;
         m_drive_right = m_right;
-        rev_to_dist = conversion;
 
         // Default instance variables
         last_time = Timer.getFPGATimestamp();
@@ -67,9 +67,9 @@ public class PrecisionDrive {
      * @param rightDrive - right motor
      * @return - true if the loop is done for both motors, false if it is not
      */
-    public boolean pidStraight(CANSparkMax leftDrive, CANSparkMax rightDrive) {
-        boolean done_left = pidControl(leftDrive);
-        boolean done_right = pidControl(rightDrive);
+    public boolean pidStraight() {
+        boolean done_left = pidControl(m_drive_left);
+        boolean done_right = pidControl(m_drive_right);
 
         return (done_left && done_right);
     }
