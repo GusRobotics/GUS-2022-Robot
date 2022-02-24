@@ -32,4 +32,9 @@ public class config {
     public static final int dist1_threshold = 1000;
     public static final double low_shot_power = 0.42;
     public static final double high_shot_power = 0.72;
+
+    // Climber hook encoder positions (absolute zero is the initial position) - these are not tuned
+    public static final double hooks_low = 5;
+    public static final double hooks_medium = 10;
+    public static final double hooks_high = 15;
 }
