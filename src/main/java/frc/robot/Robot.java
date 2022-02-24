@@ -56,8 +56,8 @@ import com.ctre.phoenix.sensors.PigeonIMU;
  */
 
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
+  private static final String kDefaultAuto = "Two Ball Auto";
+  private static final String kCustomAuto = "Example Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
@@ -122,8 +122,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
+    m_chooser.setDefaultOption("Two ball Auto", kDefaultAuto);
+    m_chooser.addOption("Example Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
     // Set secondary left motors to follow the leader
@@ -231,6 +231,7 @@ public class Robot extends TimedRobot {
     switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
+        SmartDashboard.putString("Auto", "Example");
         break;
       case kDefaultAuto:
       default:
@@ -323,28 +324,26 @@ public class Robot extends TimedRobot {
           case 6:
             // Go back to align with balls 3 and 4
             if(auto_drive.pidStraight()) {
+              // When complete, start turn
               time_stamp = Timer.getFPGATimestamp();
-              m_drive_left.set(0);
-              m_drive_right.set(0);
+              m_drive_left.set(-0.3);
+              m_drive_right.set(0.3);
               auto_stage++;
             }
             break;
 
           case 7:
-            // Turn
-            if(Timer.getFPGATimestamp() - time_stamp < 0.3) {
-              m_drive_left.set(-0.3);
-              m_drive_right.set(0.3);
-            }
-            else {
+            // Turn for set time
+            if(Timer.getFPGATimestamp() - time_stamp > 0.3) {
               m_drive_left.set(0);
-              m_drive_left.set(0);
+              m_drive_right.set(0);
               m_intake.set(1);
               intake_actuator.set(true);
               auto_drive.setDistanceControl(-1);
               auto_stage++;
             }
             break;
+
           case 8:
             // Drive forwards for 10 feet, then reset and move on
             if(auto_drive.pidStraight()) {
@@ -370,6 +369,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     run_intake = false;
+    time_stamp = Timer.getFPGATimestamp();
   }
 
   /** This function is called periodically during operator control. */
@@ -478,6 +478,11 @@ public class Robot extends TimedRobot {
     }
     else {
       m_index.set(0);
+    }
+
+    // Endgame
+    if(Timer.getFPGATimestamp() - time_stamp > 75) {
+      
     }
 
 
