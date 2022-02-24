@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.CAN;
 // Default resources
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,7 +14,7 @@ public class PrecisionDrive {
     private double rev_to_dist;
 
     // Tunable PID constants (kIz and kFF are additional options)
-    private double kP = 0;
+    private double kP = 0.06;
     private double kI = 0;
     private double kD = 0;
     private double allowedError = 0.025;
