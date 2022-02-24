@@ -38,8 +38,6 @@ import edu.wpi.first.wpilibj.Compressor;
 // Data Display Tools
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import javax.swing.plaf.basic.BasicComboPopup.InvocationKeyHandler;
-
 // Rev Resources
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -72,7 +70,6 @@ public class Robot extends TimedRobot {
    private boolean intake_released = false;
    private boolean index_on = false;
    private boolean shooter_on = false;
-   private boolean intake_actuation_primed = true;
 
    // General time stamp in global scope because of iterative stuff
    private double time_stamp = 0;
@@ -211,22 +208,6 @@ public class Robot extends TimedRobot {
    * Set point is where the system is going towards
    */
 
-  
-    /**
-  double initial_encoder;
-  // Target
-  double set_point = 10;
-  // Constant PID drive values
-  final double kP = 0.06;
-  final double kI = 0; // 0.1?
-  final double kD = 0;
-  double integral = 0;
-  double derivative = 0;
-  // !!! Temporary measure
-  double last_error = set_point;
-  double last_time = Timer.getFPGATimestamp();
-  */
-
   PrecisionDrive auto_drive;
   int auto_stage;
 
@@ -236,7 +217,7 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
 
-    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right, config.rev_feet_conversion);
+    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right);
     auto_stage = 0;
 
     // Reset encoder
@@ -272,7 +253,7 @@ public class Robot extends TimedRobot {
 
           case 1:
             // Go back and get ball
-            boolean done2 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
+            boolean done2 = auto_drive.pidStraight();
 
             SmartDashboard.putBoolean("Done c2", done2);
 
@@ -286,11 +267,7 @@ public class Robot extends TimedRobot {
 
           case 2:
             // Go back and get ball
-            boolean done3 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
-
-            SmartDashboard.putBoolean("Done c3", done3);
-
-            if(done3) {
+            if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
               m_shooter.set(config.low_shot_power);
               m_drive_left.set(0);
@@ -345,11 +322,7 @@ public class Robot extends TimedRobot {
 
           case 6:
             // Go back to align with balls 3 and 4
-            boolean done6 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
-
-            SmartDashboard.putBoolean("Done c6", done6);
-
-            if(done6) {
+            if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
               m_drive_left.set(0);
               m_drive_right.set(0);
@@ -373,12 +346,8 @@ public class Robot extends TimedRobot {
             }
             break;
           case 8:
-            // Drive forwards for 10 feet
-            boolean done8 = auto_drive.pidControl(m_drive_left.getEncoder().getPosition()*config.rev_feet_conversion);
-
-            SmartDashboard.putBoolean("Done c8", done8);
-
-            if(done8) {
+            // Drive forwards for 10 feet, then reset and move on
+            if(auto_drive.pidStraight()) {
               m_drive_left.set(0);
               m_drive_right.set(0);
               m_intake.set(0);
@@ -391,37 +360,7 @@ public class Robot extends TimedRobot {
             break;
         }
 
-
-      /**
-        // Remember to reset encoders before starting this or things could get messy
-        double error = set_point - (m_drive_left.getEncoder().getPosition()-initial_encoder)*rev_distance_conversion;
-        // Find time elapsed
-        double dt = Timer.getFPGATimestamp() - last_time;
-        // Update integral
-        integral += error * dt;
-        // Potentially reset integral on passing set point, also consider capping it or reseting it if it gets too big
-        if(error * last_error <= 0) {
-          integral = 0;
-        }
-        // Update derivative
-        derivative = (error - last_error)/dt;
-        // Determine output speed
-        double outputSpeed = error * kP + integral * kI + derivative * kD;
-        // Set motors to calculated speed
-        m_drive_left.set(outputSpeed);
-        m_drive_right.set(outputSpeed);
-        // Update variables
-        last_time = Timer.getFPGATimestamp();
-        last_error = error;
-        
-        // Wait a set time
-        Timer.delay(0.005);
-        // Print data to shuffleboard (graphing would be great)
-        SmartDashboard.putNumber("encoder change, ", (m_drive_left.getEncoder().getPosition() - initial_encoder));
-        SmartDashboard.putNumber("position", (m_drive_left.getEncoder().getPosition() - initial_encoder)*rev_distance_conversion);
-        SmartDashboard.putNumber("power", outputSpeed);
-        SmartDashboard.putNumber("error", error);
-        */
+        SmartDashboard.putNumber("Auto stage", auto_stage);
 
         break;
     }
