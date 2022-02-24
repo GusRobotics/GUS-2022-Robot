@@ -68,19 +68,20 @@ public class PrecisionDrive {
      * @return - true if the loop is done for both motors, false if it is not
      */
     public boolean pidStraight(CANSparkMax leftDrive, CANSparkMax rightDrive) {
-        return true;
+        boolean done_left = pidControl(leftDrive);
+        boolean done_right = pidControl(rightDrive);
+
+        return (done_left && done_right);
     }
 
-    /** Iterative function that adjusts power to get the drive train to its set point
-     * @param val is the current value of the system 
-     * Distance (feet): m_drive_left.getEncoder().getPosition()*rev_to_dist (rotations --> distance)
-     * Rotations (degrees): gyro value (no transformation)
-     * @return boolean complete that indicates if the error is within an acceptable range
-    */
-
-    // CANSparkMax motor
-    public boolean pidControl(double val) {
-        double error = set_point - val;
+    /**
+     * Iterative function that adjusts individual motor power to move it to a set point.
+     * @param motor - the motor that is moved
+     * @param val - the target value (either an encoder count or gyro value)
+     * @return - completion status (true = done, false = in progress)
+     */
+    public boolean pidControl(CANSparkMax motor) {
+        double error = set_point - motor.getEncoder().getPosition()*config.rev_feet_conversion;
         double dt = Timer.getFPGATimestamp() - last_time;
 
         // Integral (potentially cap if too large or reset on passing set point)
@@ -93,8 +94,7 @@ public class PrecisionDrive {
         double outputSpeed = error * kP + integral * kI + derivative * kD;
 
         // Set motors to output
-        m_drive_left.set(outputSpeed);
-        m_drive_right.set(outputSpeed);
+        motor.set(outputSpeed);
 
         // Update variables
         last_time = Timer.getFPGATimestamp();
@@ -104,7 +104,7 @@ public class PrecisionDrive {
         Timer.delay(0.005);
 
         // Print data to shuffleboard (graphing would be great)
-        SmartDashboard.putNumber("value", val);
+        SmartDashboard.putNumber("value", motor.getEncoder().getPosition()*config.rev_feet_conversion);
         SmartDashboard.putNumber("target", set_point);
         SmartDashboard.putNumber("power", outputSpeed);
         SmartDashboard.putNumber("error", error);
