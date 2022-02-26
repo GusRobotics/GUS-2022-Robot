@@ -13,7 +13,6 @@ Co Controller (Logitech):
  - Intake - TOGGLE LB for intake/off, HOLD BACK for outtake
  - Shooter - HOLD LT for low, HOLD RT for high
  - Index - RB to index to point, HOLD D-DOWN for index down
-
  - Mode button issues?
 */
 
@@ -76,8 +75,7 @@ public class Robot extends TimedRobot {
 
   // INITIALIZE ELECTRONICS
   // Controller
-  //x-box: private static XboxController joy_base = new XboxController(0);
-  private static PS4Controller joy_base = new PS4Controller(0);
+  private static XboxController joy_base = new XboxController(0);
   private static XboxController joy_co = new XboxController(1);
 
   // Add PDB for data reading (optional)
@@ -378,11 +376,10 @@ public class Robot extends TimedRobot {
     // no change if controller changes
     drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
    
-   // Drive shift
+   // Drive shift - fix this crappy structure
    // private boolean drive_high_gear = true;
    // private double last_drive_shift = 0;
-   // x-box: if (joy_base.getLeftBumper()) { 
-   if (joy_base.getL1Button()) {
+   if (joy_base.getLeftBumper()) { 
      // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
      if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
        drive_high_gear = (!drive_high_gear);
@@ -393,8 +390,7 @@ public class Robot extends TimedRobot {
 
     // Intake actuation (toggle down, otherwise up)
 
-    //x-box: if (joy_base.getLeftTriggerAxis() > 0.8) {
-    if(joy_base.getL2Button()) {
+    if (joy_base.getLeftTriggerAxis() > 0.8) {
       if(!intake_out) {
         intake_actuator.set(true);
         intake_out = true;
@@ -446,14 +442,13 @@ public class Robot extends TimedRobot {
     }
 
     // Index
-    //x-box: if(joy_base.getRightBumper()) {
-    if(joy_base.getR1Button()) {
+    if(joy_base.getRightBumper()) {
       // Base Controls
       if(dist_sensor_1.getValue() < config.dist1_threshold) {
-        m_index.set(0.8);
+        m_index.set(1);
       }
       else if (shooter_on) {
-        m_index.set(0.8);
+        m_index.set(1);
       }
       else {
         m_index.set(0);
@@ -471,7 +466,7 @@ public class Robot extends TimedRobot {
         index_on = false;
       }
       else {
-        m_index.set(0.8);
+        m_index.set(1);
       }
     }
     else {

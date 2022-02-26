@@ -74,6 +74,25 @@ public class PrecisionDrive {
     }
 
     /**
+     * Obtains the error for the specific system
+     * @param for_distance - true if travel is based on distance, false if travel is based on rotation
+     * @return the error value
+     */
+    public double getError(boolean for_distance, double val, double target) {
+        if(for_distance) {
+            return target - val*config.rev_feet_conversion;
+        }
+        else {
+            // Assume value is -180 to 180
+
+            double counterclockwise = val - target;
+            double clockwise = 360 - Math.abs(counterclockwise);
+
+            return 0;
+        }
+    }
+
+    /**
      * Iterative function that adjusts individual motor power to move it to a set point.
      * @param motor - the motor that is moved
      * @param val - the target value (either an encoder count or gyro value)
