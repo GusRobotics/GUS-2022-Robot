@@ -151,8 +151,6 @@ public class Robot extends TimedRobot {
     // Invert right leader
     m_drive_right.setInverted(true);
 
-    // Set current limits
-
     // Drive current limits
     m_drive_left.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_left2.setSmartCurrentLimit(config.drive_current_limit);

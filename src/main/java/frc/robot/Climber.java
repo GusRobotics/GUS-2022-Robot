@@ -17,6 +17,16 @@ public class Climber {
      * @return boolean status completion
      */
     public boolean fullHookRaise() {
+        if(m_hook_left.getEncoder().getPosition() < config.hooks_high) {
+            // CHECK DIRECTION
+            m_hook_left.set(0);
+            return false;
+        }
+        if(m_hook_right.getEncoder().getPosition() < config.hooks_high) {
+            // CHECK DIRECTION
+            m_hook_right.set(0);
+            return false;
+        }
         return true;
     }
 
@@ -25,6 +35,29 @@ public class Climber {
      * @return boolean status completion
      */
     public boolean partialHookRaise() {
+        if(m_hook_left.getEncoder().getPosition() < config.hooks_medium) {
+            // CHECK DIRECTION
+            m_hook_left.set(0);
+            return false;
+        }
+        if(m_hook_left.getEncoder().getPosition() < config.hooks_medium) {
+            // CHECK DIRECTION
+            m_hook_left.set(0);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Iterative model for full hook retraction when lifting the robot
+     * @return boolean status completion
+     */
+    public boolean fullHookRetract() {
+        if(m_hook_left.getEncoder().getPosition() > config.hooks_low) {
+            // CHECK DIRECTION
+            m_hook_left.set(0);
+            return false;
+        }
         return true;
     }
 
