@@ -284,50 +284,33 @@ public class Robot extends TimedRobot {
             }
             break;
           case 3:
-            // Turn
+            // Turn and go to the hub
             if(Timer.getFPGATimestamp() - time_stamp < 0.2) {
+              m_shooter.set(config.low_shot_power);
               m_drive_left.set(-0.2);
               m_drive_right.set(0.2);
             }
             else {
-              m_drive_left.set(0);
-              m_drive_left.set(0);
-              auto_stage++;
-            }
-            break;
-          /**
-          case 4:
-            // Drive for time (0.5 seconds)
-            double time_elapsed = Timer.getFPGATimestamp() - time_stamp;
-
-            if(time_elapsed < 0.5) {
-              double p = 0.6 - 0.3 * time_elapsed;
-              m_drive_left.set(p);
-              m_drive_right.set(p);
-            }
-            else if(time_elapsed < 1.25){
-              m_drive_left.set(0);
-              m_drive_right.set(0);
-            }
-            else {
               time_stamp = Timer.getFPGATimestamp();
+              m_drive_left.set(0);
+              m_drive_left.set(0);
               auto_stage++;
             }
             break;
-
-          case 5:
+          case 4:
+            // Shoot
             if (Timer.getFPGATimestamp() - time_stamp < 2) {
               m_index.set(0.75);
             }
             else {
               m_index.set(0);
               m_shooter.set(0);
-              auto_drive.setDistance(2.6);
+              auto_drive.setDistance(-2.6);
               auto_stage++;
             }
             break;
 
-          case 6:
+          case 5:
             // Go back to align with balls 3 and 4
             if(auto_drive.pidStraight()) {
               // When complete, start turn
@@ -337,8 +320,8 @@ public class Robot extends TimedRobot {
               auto_stage++;
             }
             break;
-
-          case 7:
+          /**
+          case 6:
             // Turn for set time
             if(Timer.getFPGATimestamp() - time_stamp > 0.3) {
               m_drive_left.set(0);
@@ -350,7 +333,7 @@ public class Robot extends TimedRobot {
             }
             break;
 
-          case 8:
+          case 7:
             // Drive forwards for 10 feet, then reset and move on
             if(auto_drive.pidStraight()) {
               m_drive_left.set(0);
@@ -360,7 +343,6 @@ public class Robot extends TimedRobot {
             }
             break;
           */
-
           default:
             SmartDashboard.putString("Status", "Done");
             break;

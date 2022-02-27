@@ -13,6 +13,7 @@ public class config {
     public static final int index_ID = 10;
     public static final int intake_ID = 11;
     public static final int pcm_ID = 18;
+    public static final int pidgeon_ID = 19;
 
     // Solenoid channels
     public static final int drive_channel = 0;
