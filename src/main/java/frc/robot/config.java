@@ -29,9 +29,10 @@ public class config {
 
     // Constant Robot Stats
     public static final double rev_feet_conversion = 10/42.35;
-    public static final int dist1_threshold = 1000;
+    public static final int dist1_threshold = 500;
     public static final double low_shot_power = 0.42;
-    public static final double high_shot_power = 0.55;
+    public static final double high_shot_power = 0.65;
+    public static final double index_power = 0.8;
 
     // Climber hook encoder positions (absolute zero is the initial position) - these are not tuned
     public static final double hooks_low = 5;

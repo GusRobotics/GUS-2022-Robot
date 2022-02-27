@@ -106,7 +106,7 @@ public class Robot extends TimedRobot {
   AnalogInput dist_sensor_1 = new AnalogInput(config.index_dist_sensor_channel);
   
   // Initialize drive train
-  DifferentialDrive drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
+  DifferentialDrive drivebase;
 
   // Solenoids
   Compressor compressor = new Compressor(config.pcm_ID, PneumaticsModuleType.CTREPCM);
@@ -221,16 +221,35 @@ public class Robot extends TimedRobot {
     // SmartDashboard.putNumber("Initial Encoder", m_drive_left.getEncoder().getPosition() - initial_encoder);
   }
 
+  boolean done = false;
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
+    SmartDashboard.putNumber("Auto Stage", auto_stage);
+
     switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
-        SmartDashboard.putString("Auto", "Example");
+        switch(auto_stage) {
+          case 0:
+          SmartDashboard.putString("Test Status", "Started");
+            auto_drive.setDistanceControl(-3);
+            auto_stage++;
+            break;
+          case 1:
+            if(auto_drive.pidStraight()) {
+              auto_stage++;
+            }
+            SmartDashboard.putString("Test Status", "In Progress");
+            break;
+          default:
+            SmartDashboard.putString("Test Status", "Done :)");
+            m_drive_left.set(0);
+            m_drive_right.set(0);
+            break;
+        }
         break;
       case kDefaultAuto:
-      default:
         switch(auto_stage) {
           case 0:
             // Set distance to drive back and get ball
@@ -353,10 +372,10 @@ public class Robot extends TimedRobot {
           default:
             SmartDashboard.putString("Status", "Done");
             break;
-        }
-
-        SmartDashboard.putNumber("Auto stage", auto_stage);
-
+          }
+        break;
+      default:
+        SmartDashboard.putString("!", "No Auto");
         break;
     }
   }
@@ -366,6 +385,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     run_intake = false;
     time_stamp = Timer.getFPGATimestamp();
+    drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
   }
 
   /** This function is called periodically during operator control. */
@@ -445,10 +465,10 @@ public class Robot extends TimedRobot {
     if(joy_base.getRightBumper()) {
       // Base Controls
       if(dist_sensor_1.getValue() < config.dist1_threshold) {
-        m_index.set(1);
+        m_index.set(config.index_power);
       }
       else if (shooter_on) {
-        m_index.set(1);
+        m_index.set(config.index_power);
       }
       else {
         m_index.set(0);
@@ -457,6 +477,7 @@ public class Robot extends TimedRobot {
     else if(joy_co.getPOV() == 180) {
      // Co - Reverse
       m_index.set(-1); 
+      index_on = false;
     }
     else if(joy_co.getRightBumper() && dist_sensor_1.getValue() < config.dist1_threshold && !index_on) {
       index_on = true;
@@ -493,9 +514,18 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when test mode is enabled. */
   @Override
-  public void testInit() {}
+  public void testInit() {
+    SmartDashboard.putString("Test Status", "Just Started");
+    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right);
+
+    auto_drive.setDistanceControl(-3);
+
+    drive_gear_shift.set(false);
+  }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    
+  }
 }

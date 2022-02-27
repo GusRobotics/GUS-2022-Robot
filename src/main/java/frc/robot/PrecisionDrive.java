@@ -17,10 +17,11 @@ public class PrecisionDrive {
     private double kP = 0.06;
     private double kI = 0;
     private double kD = 0;
+    private double max_integral = 1;
     private double allowedError = 0.025;
 
     // Constant PID constants (kMinOutput and kMaxOutput are additional options)
-    private double correctTime = 0.125;
+    private double correctTime = 0.1;
 
     // Global storage
     private double last_time;
@@ -67,8 +68,8 @@ public class PrecisionDrive {
      * @return - true if the loop is done for both motors, false if it is not
      */
     public boolean pidStraight() {
-        boolean done_left = pidControl(m_drive_left);
-        boolean done_right = pidControl(m_drive_right);
+        boolean done_left = pidControl(m_drive_left, "left_drive");
+        boolean done_right = pidControl(m_drive_right, "right_drive");
 
         return (done_left && done_right);
     }
@@ -77,7 +78,7 @@ public class PrecisionDrive {
      * Obtains the error for the specific system
      * @param for_distance - true if travel is based on distance, false if travel is based on rotation
      * @return the error value
-     */
+    
     public double getError(boolean for_distance, double val, double target) {
         if(for_distance) {
             return target - val*config.rev_feet_conversion;
@@ -91,6 +92,7 @@ public class PrecisionDrive {
             return 0;
         }
     }
+    */
 
     /**
      * Iterative function that adjusts individual motor power to move it to a set point.
@@ -98,12 +100,16 @@ public class PrecisionDrive {
      * @param val - the target value (either an encoder count or gyro value)
      * @return - completion status (true = done, false = in progress)
      */
-    public boolean pidControl(CANSparkMax motor) {
+    public boolean pidControl(CANSparkMax motor, String id) {
         double error = set_point - motor.getEncoder().getPosition()*config.rev_feet_conversion;
         double dt = Timer.getFPGATimestamp() - last_time;
 
         // Integral (potentially cap if too large or reset on passing set point)
         integral += error * dt;
+
+        if(integral > max_integral) {
+            integral = max_integral;
+        }
 
         // Derivative
         double derivative = (error - last_error)/dt;
@@ -122,10 +128,11 @@ public class PrecisionDrive {
         Timer.delay(0.005);
 
         // Print data to shuffleboard (graphing would be great)
-        SmartDashboard.putNumber("value", motor.getEncoder().getPosition()*config.rev_feet_conversion);
-        SmartDashboard.putNumber("target", set_point);
-        SmartDashboard.putNumber("power", outputSpeed);
-        SmartDashboard.putNumber("error", error);
+        SmartDashboard.putNumber((id + " value"), motor.getEncoder().getPosition()*config.rev_feet_conversion);
+        SmartDashboard.putNumber((id + " target"), set_point);
+        SmartDashboard.putNumber((id + " power"), outputSpeed);
+        SmartDashboard.putNumber((id + " error"), error);
+        // SmartDashboard.putNumber((id + " integral"), integral);
 
         // Check if the system is in the correct range
         if(Math.abs(error) < allowedError) {
