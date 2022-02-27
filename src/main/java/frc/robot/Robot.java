@@ -24,10 +24,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // General Resources
-import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.AnalogInput;
 
 // Solenoids
@@ -42,7 +40,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 // Cross the Road Resources
-import com.ctre.phoenix.sensors.PigeonIMU;
+// import com.ctre.phoenix.sensors.PigeonIMU;
 // import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // import com.ctre.phoenix.motorcontrol.ControlMode;
 
@@ -104,9 +102,6 @@ public class Robot extends TimedRobot {
 
   // Infrared distance sensor
   AnalogInput dist_sensor_1 = new AnalogInput(config.index_dist_sensor_channel);
-  
-  // Initialize drive train
-  DifferentialDrive drivebase;
 
   // Solenoids
   Compressor compressor = new Compressor(config.pcm_ID, PneumaticsModuleType.CTREPCM);
@@ -229,11 +224,12 @@ public class Robot extends TimedRobot {
 
     switch (m_autoSelected) {
       case kCustomAuto:
+        SmartDashboard.putString("Mode", "Test");
         // Put custom auto code here
         switch(auto_stage) {
           case 0:
           SmartDashboard.putString("Test Status", "Started");
-            auto_drive.setDistanceControl(-3);
+            auto_drive.setDistance(10);
             auto_stage++;
             break;
           case 1:
@@ -253,7 +249,7 @@ public class Robot extends TimedRobot {
         switch(auto_stage) {
           case 0:
             // Set distance to drive back and get ball
-            auto_drive.setDistanceControl(-3);
+            auto_drive.setDistance(3);
 
             // Actuate intake
             intake_actuator.set(true);
@@ -269,12 +265,8 @@ public class Robot extends TimedRobot {
 
           case 1:
             // Go back and get ball
-            boolean done2 = auto_drive.pidStraight();
-
-            SmartDashboard.putBoolean("Done c2", done2);
-
-            if(done2) {
-              auto_drive.setDistanceControl(5.5);
+            if(auto_drive.pidStraight()) {
+              auto_drive.setDistance(-5.5);
               m_intake.set(0);
               intake_actuator.set(false);
               auto_stage++;
@@ -282,7 +274,7 @@ public class Robot extends TimedRobot {
             break;
 
           case 2:
-            // Go back and get ball
+            // Drive towards goal
             if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
               m_shooter.set(config.low_shot_power);
@@ -291,7 +283,6 @@ public class Robot extends TimedRobot {
               auto_stage++;
             }
             break;
-
           case 3:
             // Turn
             if(Timer.getFPGATimestamp() - time_stamp < 0.2) {
@@ -304,7 +295,7 @@ public class Robot extends TimedRobot {
               auto_stage++;
             }
             break;
-
+          /**
           case 4:
             // Drive for time (0.5 seconds)
             double time_elapsed = Timer.getFPGATimestamp() - time_stamp;
@@ -331,7 +322,7 @@ public class Robot extends TimedRobot {
             else {
               m_index.set(0);
               m_shooter.set(0);
-              auto_drive.setDistanceControl(-2.6);
+              auto_drive.setDistance(2.6);
               auto_stage++;
             }
             break;
@@ -354,7 +345,7 @@ public class Robot extends TimedRobot {
               m_drive_right.set(0);
               m_intake.set(1);
               intake_actuator.set(true);
-              auto_drive.setDistanceControl(-1);
+              auto_drive.setDistance(1);
               auto_stage++;
             }
             break;
@@ -368,6 +359,7 @@ public class Robot extends TimedRobot {
               auto_stage++;
             }
             break;
+          */
 
           default:
             SmartDashboard.putString("Status", "Done");
@@ -385,7 +377,6 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     run_intake = false;
     time_stamp = Timer.getFPGATimestamp();
-    drivebase = new DifferentialDrive(m_drive_left, m_drive_right);
   }
 
   /** This function is called periodically during operator control. */
@@ -394,7 +385,8 @@ public class Robot extends TimedRobot {
    
     // Run drive (tank)
     // no change if controller changes
-    drivebase.tankDrive(joy_base.getLeftY(), joy_base.getRightY());
+    m_drive_left.set(joy_base.getLeftY());
+    m_drive_right.set(joy_base.getRightY());
    
    // Drive shift - fix this crappy structure
    // private boolean drive_high_gear = true;
@@ -518,19 +510,14 @@ public class Robot extends TimedRobot {
     SmartDashboard.putString("Test Status", "Just Started");
     auto_drive = new PrecisionDrive(m_drive_left, m_drive_right);
 
-    auto_drive.setDistanceControl(-3);
+    auto_drive.setDistance(-3);
 
     drive_gear_shift.set(false);
   }
 
   /** This function is called periodically during test mode. */
   @Override
-<<<<<<< HEAD
   public void testPeriodic() {
     
   }
 }
-=======
-  public void testPeriodic() {}
-}
->>>>>>> 0969ca7b7de3efc68e90d6bb809141ffa8d15b1d
