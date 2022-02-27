@@ -256,7 +256,7 @@ public class Robot extends TimedRobot {
           case 1:
             // Go back and get ball
             if(auto_drive.pidStraight()) {
-              auto_drive.setDistance(-5.5);
+              auto_drive.setDistance(-4);
               m_intake.set(0);
               intake_actuator.set(false);
               auto_stage++;
@@ -274,11 +274,24 @@ public class Robot extends TimedRobot {
             }
             break;
           case 3:
-            // Turn and go to the hub
+            // Turn
             if(Timer.getFPGATimestamp() - time_stamp < 0.2) {
               m_shooter.set(config.low_shot_power);
-              m_drive_left.set(-0.2);
-              m_drive_right.set(0.2);
+              m_drive_left.set(-0.21);
+              m_drive_right.set(0.21);
+            }
+            else {
+              time_stamp = Timer.getFPGATimestamp();
+              m_drive_left.set(0);
+              m_drive_left.set(0);
+              // auto_stage++;
+            }
+            break;
+          case 4:
+            // Go for the hub
+            if(Timer.getFPGATimestamp() - time_stamp < 0.4) {
+              m_drive_left.set(0.4);
+              m_drive_right.set(0.4);
             }
             else {
               time_stamp = Timer.getFPGATimestamp();
@@ -287,7 +300,15 @@ public class Robot extends TimedRobot {
               auto_stage++;
             }
             break;
-          case 4:
+
+          case 5:
+            if (Timer.getFPGATimestamp() - time_stamp > 0.35) {
+              time_stamp = Timer.getFPGATimestamp();
+              auto_stage++;
+            }
+            break;
+
+          case 6:
             // Shoot
             if (Timer.getFPGATimestamp() - time_stamp < 2) {
               m_index.set(0.75);
@@ -295,12 +316,12 @@ public class Robot extends TimedRobot {
             else {
               m_index.set(0);
               m_shooter.set(0);
-              auto_drive.setDistance(-2.6);
+              auto_drive.setDistance(2.6);
               auto_stage++;
             }
             break;
 
-          case 5:
+          case 7:
             // Go back to align with balls 3 and 4
             if(auto_drive.pidStraight()) {
               // When complete, start turn
@@ -310,8 +331,8 @@ public class Robot extends TimedRobot {
               auto_stage++;
             }
             break;
-          /**
-          case 6:
+
+          case 8:
             // Turn for set time
             if(Timer.getFPGATimestamp() - time_stamp > 0.3) {
               m_drive_left.set(0);
@@ -322,8 +343,8 @@ public class Robot extends TimedRobot {
               auto_stage++;
             }
             break;
-
-          case 7:
+          /**
+          case 9:
             // Drive forwards for 10 feet, then reset and move on
             if(auto_drive.pidStraight()) {
               m_drive_left.set(0);
@@ -477,7 +498,7 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
-    
+
   }
 
   /** This function is called periodically during test mode. */
