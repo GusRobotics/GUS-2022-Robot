@@ -40,7 +40,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 // Cross the Road Resources
-// import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.sensors.PigeonIMU;
 // import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // import com.ctre.phoenix.motorcontrol.ControlMode;
 
@@ -98,7 +98,7 @@ public class Robot extends TimedRobot {
   CANSparkMax m_intake = new CANSparkMax(config.intake_ID, MotorType.kBrushless);
 
   // Gyro
-  // PigeonIMU gyro = new PigeonIMU(pigeon_ID);
+  PigeonIMU gyro = new PigeonIMU(config.pigeon_ID);
 
   // Infrared distance sensor
   AnalogInput dist_sensor_1 = new AnalogInput(config.index_dist_sensor_channel);
@@ -187,16 +187,6 @@ public class Robot extends TimedRobot {
    * <p>You can add additional auto modes by adding additional comparisons to the switch structure
    * below with additional strings. If using the SendableChooser make sure to add them to the
    * chooser code above as well.
-   */
-
-  /**
-   * Strategies
-   * Time Based (Dead Reckining) - susceptible to friction, momentum, etc.
-   * Simple Encoder (Bang Bang Control) - susceptible to end momentum
-   * PID - high speed and accuracy
-   * 
-   * General PID Notes
-   * Set point is where the system is going towards
    */
 
   PrecisionDrive auto_drive;
@@ -370,17 +360,17 @@ public class Robot extends TimedRobot {
     m_drive_left.set(joy_base.getLeftY());
     m_drive_right.set(joy_base.getRightY());
    
-   // Drive shift - fix this crappy structure
-   // private boolean drive_high_gear = true;
-   // private double last_drive_shift = 0;
-   if (joy_base.getLeftBumper()) { 
-     // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
-     if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
-       drive_high_gear = (!drive_high_gear);
-       last_drive_shift = Timer.getFPGATimestamp();
-     }
-   }
-   drive_gear_shift.set(drive_high_gear);
+    // Drive shift - fix this crappy structure
+    // private boolean drive_high_gear = true;
+    // private double last_drive_shift = 0;
+    if (joy_base.getLeftBumper()) { 
+      // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
+      if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
+        drive_high_gear = (!drive_high_gear);
+        last_drive_shift = Timer.getFPGATimestamp();
+      }
+    }
+    drive_gear_shift.set(drive_high_gear);
 
     // Intake actuation (toggle down, otherwise up)
 
@@ -396,28 +386,28 @@ public class Robot extends TimedRobot {
     }
     
    
-   // Intake wheels (toggle on, hold to reverse, stop after reverse)
-   if(joy_co.getLeftBumper() && intake_released) {
+    // Intake wheels (toggle on, hold to reverse, stop after reverse)
+    if(joy_co.getLeftBumper() && intake_released) {
       run_intake = (!run_intake);
       intake_released = false;
-   }
-   else if(!joy_co.getLeftBumper()){
-     intake_released = true;
-   }
+    }
+    else if(!joy_co.getLeftBumper()){
+      intake_released = true;
+    }
 
-   // Intake when toggled
-   if(run_intake) {
-     m_intake.set(1);
-   }
+    // Intake when toggled
+    if(run_intake) {
+      m_intake.set(1);
+    }
 
-   // Outtake when pressed 
-   if(joy_co.getBackButton()) {
+    // Outtake when pressed 
+    if(joy_co.getBackButton()) {
       m_intake.set(-1);
       run_intake = false;
-   }
-   else if(!run_intake) {
+    }
+    else if(!run_intake) {
       m_intake.set(0);
-   }
+    }
    
     // Shooter
     if(joy_co.getLeftTriggerAxis() > 0.8) {
@@ -470,10 +460,8 @@ public class Robot extends TimedRobot {
 
     // Endgame
     if(Timer.getFPGATimestamp() - time_stamp > 75) {
-      
+      // Enable climb controls here
     }
-
-
   }
 
   /** This function is called once when the robot is disabled. */
@@ -489,17 +477,18 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
-    SmartDashboard.putString("Test Status", "Just Started");
-    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right);
-
-    auto_drive.setDistance(-3);
-
-    drive_gear_shift.set(false);
+    
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+    double yaw = gyro.getYaw();
+    double pitch = gyro.getPitch();
+    double roll = gyro.getRoll();
     
+    SmartDashboard.putNumber("Yaw", yaw);
+    SmartDashboard.putNumber("Pitch", pitch);
+    SmartDashboard.putNumber("Roll", roll);
   }
 }
