@@ -44,6 +44,11 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 // import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // import com.ctre.phoenix.motorcontrol.ControlMode;
 
+// Limelight
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -62,11 +67,16 @@ public class Robot extends TimedRobot {
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
    private double last_drive_shift = 0;
-   private boolean intake_out = false;
+
    private boolean run_intake = false;
    private boolean intake_released = false;
+
    private boolean index_on = false;
+   private double index_time_stamp = 0;
+   private boolean index_to_shooter = false;
+
    private boolean shooter_on = false;
+   private boolean shooter_high = false; 
 
    // General time stamp in global scope because of iterative stuff
    private double time_stamp = 0;
@@ -107,6 +117,9 @@ public class Robot extends TimedRobot {
   Compressor compressor = new Compressor(config.pcm_ID, PneumaticsModuleType.CTREPCM);
   Solenoid drive_gear_shift = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.drive_channel);
   Solenoid intake_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.intake_channel);
+
+  // Limelight
+  NetworkTable limelight = NetworkTableInstance.getDefault().getTable("limelight");
 
 
   /**
@@ -370,6 +383,8 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     run_intake = false;
     time_stamp = Timer.getFPGATimestamp();
+
+    limelight.getEntry("camMode").setNumber(1);
   }
 
   /** This function is called periodically during operator control. */
@@ -393,8 +408,16 @@ public class Robot extends TimedRobot {
     }
     drive_gear_shift.set(drive_high_gear);
 
-    // Intake actuation (toggle down, otherwise up)
+    // Intake Actuation (hold down)
+    if (joy_base.getLeftTriggerAxis() > 0.8) {
+      intake_actuator.set(true);
+    }
+    else {
+      intake_actuator.set(false);
+    }
 
+    // Intake actuation (toggle down, otherwise up) - depricated
+    /**
     if (joy_base.getLeftTriggerAxis() > 0.8) {
       if(!intake_out) {
         intake_actuator.set(true);
@@ -405,6 +428,7 @@ public class Robot extends TimedRobot {
       intake_actuator.set(false);
       intake_out = false;
     }
+    */
     
    
     // Intake wheels (toggle on, hold to reverse, stop after reverse)
@@ -435,11 +459,13 @@ public class Robot extends TimedRobot {
       // Low Power
       m_shooter.set(config.low_shot_power);
       shooter_on = true;
+      shooter_high = false;
     }
     else if(joy_co.getRightTriggerAxis() > 0.8) {
       // High Power
       m_shooter.set(config.high_shot_power);
       shooter_on = true;
+      shooter_high = true;
     }
     else {
       m_shooter.set(0);
@@ -450,12 +476,22 @@ public class Robot extends TimedRobot {
     if(joy_base.getRightBumper()) {
       // Base Controls
       if(dist_sensor_1.getValue() < config.dist1_threshold) {
+        // Index freely when the sensor is not triggered by a ball
         m_index.set(config.index_power);
       }
       else if (shooter_on) {
-        m_index.set(config.index_power);
+        // Index freely when the shooter is on with the high shot exception
+        if(shooter_high) {
+            index_time_stamp = Timer.getFPGATimestamp();
+            index_to_shooter = true;
+        }
+        else {
+          m_index.set(config.index_power);
+        }
+        
       }
       else {
+        // Do not index if the sensor is not triggered and the shooter is not on
         m_index.set(0);
       }
     }
@@ -477,6 +513,13 @@ public class Robot extends TimedRobot {
     }
     else {
       m_index.set(0);
+    }
+
+    if(index_to_shooter && Timer.getFPGATimestamp() - index_time_stamp > config.high_index_run) {
+      m_index.set(1);
+    }
+    else {
+      index_to_shooter = false;
     }
 
     // Endgame

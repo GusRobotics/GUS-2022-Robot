@@ -40,7 +40,7 @@ public class TurnPID {
         this.set_point = this.gyro.getYaw() + angle;
     }
 
-    public boolean pidControl(String id) {
+    public boolean pidControl(boolean invert, String id) {
         this.error = this.set_point - this.gyro.getYaw();
         this.dt = Timer.getFPGATimestamp() - this.last_time;
 
@@ -58,6 +58,10 @@ public class TurnPID {
 
         // Output
         this.output = this.error * this.kP + this.integral * this.kI + this.derivative * this.kD;
+
+        if(invert) {
+            this.error *= -1;
+        }
 
         // Set motors to output
         this.motor.set(this.output);

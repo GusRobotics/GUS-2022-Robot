@@ -34,6 +34,8 @@ public class config {
     public static final double low_shot_power = 0.42;
     public static final double high_shot_power = 0.65;
     public static final double index_power = 0.8;
+    public static final double high_index_run = 0.2;
+    public static final double high_index_delay = 0.2;
 
     // Climber hook encoder positions (absolute zero is the initial position) - these are not tuned
     public static final double hooks_low = 5;

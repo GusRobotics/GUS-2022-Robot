@@ -3,13 +3,16 @@ package frc.robot;
 import com.revrobotics.CANSparkMax;
 
 public class PrecisionDrive {
-    private DistancePID leftPID;
-    private DistancePID rightPID;
+    private DistancePID leftDistPID;
+    private DistancePID rightDistPID;
+    private TurnPID leftTurnPID;
+    private TurnPID rightTurnPID;
+
 
     public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right) {
         // Create controllers
-        leftPID = new DistancePID(m_left);
-        rightPID = new DistancePID(m_right);
+        leftDistPID = new DistancePID(m_left);
+        rightDistPID = new DistancePID(m_right);
     }
 
     /**
@@ -17,8 +20,8 @@ public class PrecisionDrive {
      * @param distance - the straight distance for the robot to drive
      */
     public void setDistance(double distance) {
-        leftPID.setSetPoint(distance);
-        rightPID.setSetPoint(distance);
+        leftDistPID.setSetPoint(distance);
+        rightDistPID.setSetPoint(distance);
     }
 
     /**
@@ -28,8 +31,30 @@ public class PrecisionDrive {
      * @return - true if the loop is done for both motors, false if it is not
      */
     public boolean pidStraight() {
-        boolean done_left = leftPID.pidControl("left_drive");
-        boolean done_right = rightPID.pidControl("right_drive");
+        boolean done_left = leftDistPID.pidControl("left_drive");
+        boolean done_right = rightDistPID.pidControl("right_drive");
+
+        return (done_left && done_right);
+    }
+
+    /**
+     * Sets the angle to rotate the robot in place
+     * @param angle - the angle for the robot to rotate [-180, 180]
+     */
+    public void setAngle(double angle) {
+        leftTurnPID.setSetPoint(angle);
+        leftTurnPID.setSetPoint(angle);
+    }
+
+    /**
+     * PID Control for turning in place based on gyro values
+     * @param leftDrive - left motor
+     * @param rightDrive - right motor
+     * @return - true if the loop is done for both motors, false if it is not
+     */
+    public boolean pidTurn() {
+        boolean done_left = leftTurnPID.pidControl(true, "left_drive");
+        boolean done_right = rightTurnPID.pidControl(false, "right_drive");
 
         return (done_left && done_right);
     }
