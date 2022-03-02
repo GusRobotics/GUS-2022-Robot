@@ -66,7 +66,7 @@ public class Robot extends TimedRobot {
  
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
-   private double last_drive_shift = 0;
+   private boolean shift_released = true;
 
    private boolean run_intake = false;
    private boolean intake_released = false;
@@ -214,9 +214,8 @@ public class Robot extends TimedRobot {
     auto_drive = new PrecisionDrive(m_drive_left, m_drive_right);
     auto_stage = 0;
 
-    // Reset encoder
-    // initial_encoder = m_drive_left.getEncoder().getPosition();
-    // SmartDashboard.putNumber("Initial Encoder", m_drive_left.getEncoder().getPosition() - initial_encoder);
+    // Set robot in high gear
+    drive_gear_shift.set(false);
   }
 
   boolean done = false;
@@ -231,7 +230,6 @@ public class Robot extends TimedRobot {
         // Put custom auto code here
         switch(auto_stage) {
           case 0:
-          SmartDashboard.putString("Test Status", "Started");
             auto_drive.setDistance(10);
             auto_stage++;
             break;
@@ -248,21 +246,15 @@ public class Robot extends TimedRobot {
             break;
         }
         break;
+      
       case kDefaultAuto:
         switch(auto_stage) {
           case 0:
-            // Set distance to drive back and get ball
-            auto_drive.setDistance(3);
-
-            // Actuate intake
+            // Actuate and start intake
             intake_actuator.set(true);
-
-            // Turn intake on
             m_intake.set(1);
 
-            // High gear
-            drive_gear_shift.set(false);
-
+            auto_drive.setDistance(3);
             auto_stage++;
             break;
 
@@ -297,9 +289,10 @@ public class Robot extends TimedRobot {
               time_stamp = Timer.getFPGATimestamp();
               m_drive_left.set(0);
               m_drive_left.set(0);
-              // auto_stage++;
+              auto_stage++;
             }
             break;
+
           case 4:
             // Go for the hub
             if(Timer.getFPGATimestamp() - time_stamp < 0.4) {
@@ -391,24 +384,23 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
    
-    // Run drive (tank)
-    // no change if controller changes
+    // Run Drive (Tank)
     m_drive_left.set(joy_base.getLeftY());
     m_drive_right.set(joy_base.getRightY());
    
-    // Drive shift - fix this crappy structure
-    // private boolean drive_high_gear = true;
-    // private double last_drive_shift = 0;
+    // Drive Shift (Toggle)
     if (joy_base.getLeftBumper()) { 
-      // Ensure that button does not instantaneously shift multiple times with 0.5 second buffer
-      if (Timer.getFPGATimestamp() - last_drive_shift > 0.5) {
+      if (shift_released) {
         drive_high_gear = (!drive_high_gear);
-        last_drive_shift = Timer.getFPGATimestamp();
       }
+      shift_released = false;
+    }
+    else {
+      shift_released = true;
     }
     drive_gear_shift.set(drive_high_gear);
 
-    // Intake Actuation (hold down)
+    // Intake Actuation (Hold)
     if (joy_base.getLeftTriggerAxis() > 0.8) {
       intake_actuator.set(true);
     }
@@ -430,8 +422,7 @@ public class Robot extends TimedRobot {
     }
     */
     
-   
-    // Intake wheels (toggle on, hold to reverse, stop after reverse)
+    // Intake (Toggle)
     if(joy_co.getLeftBumper() && intake_released) {
       run_intake = (!run_intake);
       intake_released = false;
@@ -439,13 +430,11 @@ public class Robot extends TimedRobot {
     else if(!joy_co.getLeftBumper()){
       intake_released = true;
     }
-
-    // Intake when toggled
     if(run_intake) {
       m_intake.set(1);
     }
 
-    // Outtake when pressed 
+    // Outtake (Hold)
     if(joy_co.getBackButton()) {
       m_intake.set(-1);
       run_intake = false;
@@ -516,7 +505,7 @@ public class Robot extends TimedRobot {
     }
 
     if(index_to_shooter && Timer.getFPGATimestamp() - index_time_stamp > config.high_index_run) {
-      m_index.set(1);
+      m_index.set(config.index_power);
     }
     else {
       index_to_shooter = false;
@@ -536,6 +525,14 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
+
+    double yaw = gyro.getYaw();
+    double pitch = gyro.getPitch();
+    double roll = gyro.getRoll();
+    
+    SmartDashboard.putNumber("Yaw", yaw);
+    SmartDashboard.putNumber("Pitch", pitch);
+    SmartDashboard.putNumber("Roll", roll);
   }
 
   /** This function is called once when test mode is enabled. */
@@ -547,12 +544,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    double yaw = gyro.getYaw();
-    double pitch = gyro.getPitch();
-    double roll = gyro.getRoll();
     
-    SmartDashboard.putNumber("Yaw", yaw);
-    SmartDashboard.putNumber("Pitch", pitch);
-    SmartDashboard.putNumber("Roll", roll);
   }
 }
