@@ -9,9 +9,13 @@ public class PrecisionDrive {
     private TurnPID leftTurnPID;
     private TurnPID rightTurnPID;
 
-
+    /**
+     * Sets up a precision drive object to store data for pid control
+     * @param m_left - left drive
+     * @param m_right - right drive
+     * @param gyro - PigeonIMU gyro sensor (for precision turning)
+     */
     public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, PigeonIMU gyro) {
-        // Create controllers
         leftDistPID = new DistancePID(m_left);
         rightDistPID = new DistancePID(m_right);
         leftTurnPID = new TurnPID(m_left, gyro);
@@ -28,10 +32,10 @@ public class PrecisionDrive {
     }
 
     /**
-     * PID Control for driving in a straight line with motors controlled seperatedly to combat drift
+     * PID Control for driving in a straight line with motors controlled seperatedly (combats drift)
      * @param leftDrive - left motor
      * @param rightDrive - right motor
-     * @return - true if the loop is done for both motors, false if it is not
+     * @return - returns true when both sides of the drive have gone the desired distance
      */
     public boolean pidStraight() {
         boolean done_left = leftDistPID.pidControl("left_drive");
@@ -42,7 +46,7 @@ public class PrecisionDrive {
 
     /**
      * Sets the angle to rotate the robot in place
-     * @param angle - the angle for the robot to rotate [-180, 180]
+     * @param angle - the angle for the robot to rotate (should be between -180 and 180)
      */
     public void setAngle(double angle) {
         leftTurnPID.setSetPoint(angle);
@@ -53,7 +57,7 @@ public class PrecisionDrive {
      * PID Control for turning in place based on gyro values
      * @param leftDrive - left motor
      * @param rightDrive - right motor
-     * @return - true if the loop is done for both motors, false if it is not
+     * @return - returns true when turning is done
      */
     public boolean pidTurn() {
         boolean done_left = leftTurnPID.pidControl(true, "left_drive");
