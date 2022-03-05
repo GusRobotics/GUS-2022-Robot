@@ -13,7 +13,6 @@ Co Controller (Logitech):
  - Intake - TOGGLE LB for intake/off, HOLD BACK for outtake
  - Shooter - HOLD LT for low, HOLD RT for high
  - Index - RB to index to point, HOLD D-DOWN for index down
- - Mode button issues?
 */
 
 package frc.robot;
@@ -28,6 +27,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CAN;
+
 // Solenoids
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Compressor;
@@ -39,12 +39,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import java.net.CacheRequest;
-
 // Cross the Road Resources
 import com.ctre.phoenix.sensors.PigeonIMU;
 // import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // import com.ctre.phoenix.motorcontrol.ControlMode;
+
+// Camera Stuff
+import edu.wpi.first.cameraserver.CameraServer;
 
 // Limelight
 import edu.wpi.first.networktables.NetworkTable;
@@ -60,7 +61,10 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  */
 
 public class Robot extends TimedRobot {
+
+  // Auto options
   private static final String kDefaultAuto = "Two Ball Auto";
+  private static final String kFourBall = "Four Ball Auto";
   private static final String kPidTuneAuto = "PID Tune Auto";
   private static final String kPIDTurnAuto = "Turn Test Auto";
   private String m_autoSelected;
@@ -123,6 +127,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Set auto options
     m_chooser.setDefaultOption("Two ball Auto", kDefaultAuto);
+    m_chooser.addOption("Four Ball", kFourBall);
     m_chooser.addOption("PID Tuner", kPidTuneAuto);
     m_chooser.addOption("Turn Test", kPIDTurnAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -173,6 +178,10 @@ public class Robot extends TimedRobot {
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
+
+    // Limelight settings
+    limelight.getEntry("camMode").setNumber(1);
+    limelight.getEntry("ledMode").setNumber(1);
   }
 
   /**
@@ -259,6 +268,7 @@ public class Robot extends TimedRobot {
         break;
       
       case kDefaultAuto:
+        // Two ball auto
         switch(auto_stage) {
           case 0:
             // Actuate and start intake
@@ -272,110 +282,133 @@ public class Robot extends TimedRobot {
           case 1:
             // Go back and get ball
             if(auto_drive.pidStraight()) {
-              auto_drive.setDistance(-4);
+              auto_drive.setDistance(-6.5);
+              m_shooter.set(config.low_shot_power);
               m_intake.set(0);
-              intake_actuator.set(false);
               auto_stage++;
             }
             break;
-
+          
           case 2:
             // Drive towards goal
             if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
-              m_shooter.set(config.low_shot_power);
-              m_drive_left.set(0);
-              m_drive_right.set(0);
+              auto_drive.stop();
               auto_stage++;
             }
             break;
+
           case 3:
-            // Turn
-            if(Timer.getFPGATimestamp() - time_stamp < 0.2) {
-              m_shooter.set(config.low_shot_power);
-              m_drive_left.set(-0.21);
-              m_drive_right.set(0.21);
-            }
-            else {
+            // Wait a moment
+            if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
               time_stamp = Timer.getFPGATimestamp();
-              m_drive_left.set(0);
-              m_drive_left.set(0);
+              m_index.set(1);
               auto_stage++;
             }
             break;
 
           case 4:
-            // Go for the hub
-            if(Timer.getFPGATimestamp() - time_stamp < 0.4) {
-              m_drive_left.set(0.4);
-              m_drive_right.set(0.4);
+            // Shoot
+            if(Timer.getFPGATimestamp() - time_stamp > 2) {
+              auto_drive.setDistance(0.5);
+              m_index.set(0);
+              m_shooter.set(0);
+              auto_stage++;
             }
-            else {
+            break;
+
+          default:
+            // Finished
+            SmartDashboard.putString("Status", "Done");
+            auto_drive.stop();
+            m_index.set(0);
+            m_shooter.set(0);
+            break;
+          }
+        break;
+
+      case kFourBall:
+        // Two ball auto
+        switch(auto_stage) {
+          case 0:
+            // Actuate and start intake
+            intake_actuator.set(true);
+            m_intake.set(1);
+
+            auto_drive.setDistance(3);
+            auto_stage++;
+            break;
+
+          case 1:
+            // Go back and get ball
+            if(auto_drive.pidStraight()) {
+              auto_drive.setDistance(-6.5);
+              m_shooter.set(config.low_shot_power);
+              m_intake.set(0);
+              auto_stage++;
+            }
+            break;
+          
+          case 2:
+            // Drive towards goal
+            if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
-              m_drive_left.set(0);
-              m_drive_left.set(0);
+              auto_drive.stop();
+              auto_stage++;
+            }
+            break;
+
+          case 3:
+            // Wait a moment
+            if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
+              time_stamp = Timer.getFPGATimestamp();
+              m_index.set(1);
+              auto_stage++;
+            }
+            break;
+
+          case 4:
+            // Shoot
+            if(Timer.getFPGATimestamp() - time_stamp > 2) {
+              auto_drive.setDistance(0.5);
+              m_index.set(0);
+              m_shooter.set(0);
               auto_stage++;
             }
             break;
 
           case 5:
-            if (Timer.getFPGATimestamp() - time_stamp > 0.35) {
+            // Drive back
+            if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
+              auto_drive.stop();
               auto_stage++;
             }
             break;
-
+          
           case 6:
-            // Shoot
-            if (Timer.getFPGATimestamp() - time_stamp < 2) {
-              m_index.set(0.75);
+            // Turn 65 degrees
+            if(Timer.getFPGATimestamp() - time_stamp < 0.7) {
+              m_drive_left.set(-0.7);
+              m_drive_right.set(0.7);
             }
             else {
-              m_index.set(0);
-              m_shooter.set(0);
-              auto_drive.setDistance(2.6);
+              auto_drive.stop();
               auto_stage++;
             }
             break;
+        
 
-          case 7:
-            // Go back to align with balls 3 and 4
-            if(auto_drive.pidStraight()) {
-              // When complete, start turn
-              time_stamp = Timer.getFPGATimestamp();
-              m_drive_left.set(-0.3);
-              m_drive_right.set(0.3);
-              auto_stage++;
-            }
-            break;
+        default:
+          // Finished
+          SmartDashboard.putString("Status", "Done");
+          auto_drive.stop();
+          m_index.set(0);
+          m_shooter.set(0);
+          break;
+        }
+      break;
 
-          case 8:
-            // Turn for set time
-            if(Timer.getFPGATimestamp() - time_stamp > 0.3) {
-              m_drive_left.set(0);
-              m_drive_right.set(0);
-              m_intake.set(1);
-              intake_actuator.set(true);
-              auto_drive.setDistance(1);
-              auto_stage++;
-            }
-            break;
-          /**
-          case 9:
-            // Drive forwards for 10 feet, then reset and move on
-            if(auto_drive.pidStraight()) {
-              m_drive_left.set(0);
-              m_drive_right.set(0);
-              m_intake.set(0);
-              auto_stage++;
-            }
-            break;
-          */
-          default:
-            SmartDashboard.putString("Status", "Done");
-            break;
-          }
-        break;
       default:
         SmartDashboard.putString("!", "No Auto");
         break;
@@ -387,8 +420,6 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     run_intake = false;
     time_stamp = Timer.getFPGATimestamp();
-
-    limelight.getEntry("camMode").setNumber(1);
   }
 
   /** This function is called periodically during operator control. */
@@ -418,20 +449,6 @@ public class Robot extends TimedRobot {
     else {
       intake_actuator.set(false);
     }
-
-    // Intake actuation (toggle down, otherwise up) - depricated
-    /**
-    if (joy_base.getLeftTriggerAxis() > 0.8) {
-      if(!intake_out) {
-        intake_actuator.set(true);
-        intake_out = true;
-      }
-    }
-    else {
-      intake_actuator.set(false);
-      intake_out = false;
-    }
-    */
     
     // Intake (Toggle)
     if(joy_co.getLeftBumper() && intake_released) {
@@ -482,8 +499,7 @@ public class Robot extends TimedRobot {
       else if (shooter_on) {
         // Index freely when the shooter is on with the high shot exception
         if(shooter_high) {
-            index_time_stamp = Timer.getFPGATimestamp();
-            index_to_shooter = true;
+          m_index.set(0.5);
         }
         else {
           m_index.set(config.index_power);
@@ -515,13 +531,7 @@ public class Robot extends TimedRobot {
       m_index.set(0);
     }
 
-    if(index_to_shooter && Timer.getFPGATimestamp() - index_time_stamp > config.high_index_run) {
-      m_index.set(config.index_power);
-    }
-    else {
-      index_to_shooter = false;
-    }
-
+    /**
     // Climber
     if(joy_co.getYButton()) {
       m_climber_right.set(1);
@@ -542,6 +552,7 @@ public class Robot extends TimedRobot {
     else {
       m_climber_left.set(0);
     }
+    */
 
 
     // Endgame

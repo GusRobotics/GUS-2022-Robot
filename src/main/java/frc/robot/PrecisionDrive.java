@@ -4,6 +4,8 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.revrobotics.CANSparkMax;
 
 public class PrecisionDrive {
+    private CANSparkMax left;
+    private CANSparkMax right;
     private DistancePID leftDistPID;
     private DistancePID rightDistPID;
     private TurnPID leftTurnPID;
@@ -16,6 +18,8 @@ public class PrecisionDrive {
      * @param gyro - PigeonIMU gyro sensor (for precision turning)
      */
     public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, PigeonIMU gyro) {
+        left = m_left;
+        right = m_right;
         leftDistPID = new DistancePID(m_left);
         rightDistPID = new DistancePID(m_right);
         leftTurnPID = new TurnPID(m_left, gyro);
@@ -24,7 +28,7 @@ public class PrecisionDrive {
 
     /**
      * Sets the distance to drive for both motors
-     * @param distance - the straight distance for the robot to drive
+     * @param distance - distance in feet to drive
      */
     public void setDistance(double distance) {
         leftDistPID.setSetPoint(distance);
@@ -50,7 +54,7 @@ public class PrecisionDrive {
      */
     public void setAngle(double angle) {
         leftTurnPID.setSetPoint(angle);
-        leftTurnPID.setSetPoint(angle);
+        rightTurnPID.setSetPoint(angle);
     }
 
     /**
@@ -64,5 +68,10 @@ public class PrecisionDrive {
         boolean done_right = rightTurnPID.pidControl(false, "right_drive");
 
         return (done_left && done_right);
+    }
+
+    public void stop() {
+        left.set(0);
+        right.set(0);
     }
 }
