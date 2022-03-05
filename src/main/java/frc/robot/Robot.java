@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.AnalogInput;
-
+import edu.wpi.first.wpilibj.CAN;
 // Solenoids
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Compressor;
@@ -38,6 +38,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // Rev Resources
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import java.net.CacheRequest;
 
 // Cross the Road Resources
 import com.ctre.phoenix.sensors.PigeonIMU;
@@ -59,10 +61,10 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Two Ball Auto";
-  private static final String kCustomAuto = "Example Auto";
+  private static final String kPidTuneAuto = "PID Tune Auto";
+  private static final String kPIDTurnAuto = "Turn Test Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
  
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
@@ -89,38 +91,29 @@ public class Robot extends TimedRobot {
   // Add PDB for data reading (optional)
   //PowerDistributionPanel examplePD = new PowerDistribution(0, ModuleType.kAutomatic);
 
-  // Drive motors
+  // Initialize all motors
   CANSparkMax m_drive_left = new CANSparkMax(config.drive_left1_ID, MotorType.kBrushless);
   CANSparkMax m_drive_left2 = new CANSparkMax(config.drive_left2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_left3 = new CANSparkMax(config.drive_left3_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right = new CANSparkMax(config.drive_right1_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right2 = new CANSparkMax(config.drive_right2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right3 = new CANSparkMax(config.drive_right3_ID, MotorType.kBrushless);
-
-  // Shooter motors
   CANSparkMax m_shooter = new CANSparkMax(config.shooter1_ID, MotorType.kBrushless);
   CANSparkMax m_shooter2 = new CANSparkMax(config.shooter2_ID, MotorType.kBrushless);
-
-  // Index motor
   CANSparkMax m_index = new CANSparkMax(config.index_ID, MotorType.kBrushless);
-
-  // Intake motors
   CANSparkMax m_intake = new CANSparkMax(config.intake_ID, MotorType.kBrushless);
+  CANSparkMax m_climber_left = new CANSparkMax(config.climber_left_ID, MotorType.kBrushless);
+  CANSparkMax m_climber_right = new CANSparkMax(config.climber_right_ID, MotorType.kBrushless);
 
-  // Gyro
+  // Initialize all sensors 
   PigeonIMU gyro = new PigeonIMU(config.pigeon_ID);
-
-  // Infrared distance sensor
   AnalogInput dist_sensor_1 = new AnalogInput(config.index_dist_sensor_channel);
+  NetworkTable limelight = NetworkTableInstance.getDefault().getTable("limelight");
 
-  // Solenoids
+  // Initialize pneumatic system
   Compressor compressor = new Compressor(config.pcm_ID, PneumaticsModuleType.CTREPCM);
   Solenoid drive_gear_shift = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.drive_channel);
   Solenoid intake_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.intake_channel);
-
-  // Limelight
-  NetworkTable limelight = NetworkTableInstance.getDefault().getTable("limelight");
-
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -128,19 +121,17 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    // Set auto options
     m_chooser.setDefaultOption("Two ball Auto", kDefaultAuto);
-    m_chooser.addOption("Example Auto", kCustomAuto);
+    m_chooser.addOption("PID Tuner", kPidTuneAuto);
+    m_chooser.addOption("Turn Test", kPIDTurnAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    // Set secondary left motors to follow the leader
+    // Set parallel motors to follow the leader
     m_drive_left2.follow(m_drive_left);
     m_drive_left3.follow(m_drive_left);
-
-    // Set secondary right motors to follow the leader
     m_drive_right2.follow(m_drive_right);
     m_drive_right3.follow(m_drive_right);
-
-    // Set secondary shooter motor to follow the leader
     m_shooter2.follow(m_shooter);
 
     // For all motors, reset to factory defaults
@@ -153,29 +144,32 @@ public class Robot extends TimedRobot {
     m_shooter.restoreFactoryDefaults();
     m_shooter2.restoreFactoryDefaults();
     m_index.restoreFactoryDefaults();
+    m_climber_left.restoreFactoryDefaults();
+    m_climber_right.restoreFactoryDefaults();
 
-    // Invert right leader
+    // Invert backwards motors
     m_drive_right.setInverted(true);
+    m_climber_right.setInverted(true);
+    m_climber_left.setInverted(true);
 
-    // Drive current limits
+    // Set current limits
     m_drive_left.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_left2.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_left3.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_right.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_right2.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_right3.setSmartCurrentLimit(config.drive_current_limit);
-    
-    // Shooter current limit
     m_shooter.setSmartCurrentLimit(config.shooter_current_limit);
     m_shooter2.setSmartCurrentLimit(config.shooter_current_limit);
-   
-    // Intake current limit
     m_intake.setSmartCurrentLimit(config.intake_current_limit);
-   
-    // Index current limit
     m_index.setSmartCurrentLimit(config.index_current_limit);
+    m_climber_left.setSmartCurrentLimit(config.climber_current_limit);
+    m_climber_right.setSmartCurrentLimit(config.climber_current_limit);
 
+    // Set index and intake to brake
     m_index.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    m_climber_left.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    m_climber_right.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
@@ -211,7 +205,7 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
 
-    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right);
+    auto_drive = new PrecisionDrive(m_drive_left, m_drive_right, gyro);
     auto_stage = 0;
 
     // Set robot in high gear
@@ -225,7 +219,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Auto Stage", auto_stage);
 
     switch (m_autoSelected) {
-      case kCustomAuto:
+      case kPidTuneAuto:
         SmartDashboard.putString("Mode", "Test");
         // Put custom auto code here
         switch(auto_stage) {
@@ -244,6 +238,23 @@ public class Robot extends TimedRobot {
             m_drive_left.set(0);
             m_drive_right.set(0);
             break;
+        }
+        break;
+
+      case kPIDTurnAuto:
+        switch(auto_stage) {
+          case 0:
+            auto_drive.setAngle(90);
+            auto_stage++;
+            break;
+          case 1:
+            if(auto_drive.pidTurn()) {
+              auto_stage++;
+            }
+            break;
+          default:
+            SmartDashboard.putString("Test Status", "Done");
+
         }
         break;
       
@@ -511,6 +522,28 @@ public class Robot extends TimedRobot {
       index_to_shooter = false;
     }
 
+    // Climber
+    if(joy_co.getYButton()) {
+      m_climber_right.set(1);
+    }
+    else if(joy_co.getAButton()) {
+      m_climber_right.set(-1);
+    }
+    else {
+      m_climber_right.set(0);
+    }
+
+    if(joy_base.getYButton()) {
+      m_climber_left.set(1);
+    }
+    else if(joy_base.getAButton()) {
+      m_climber_left.set(-1);
+    }
+    else {
+      m_climber_left.set(0);
+    }
+
+
     // Endgame
     if(Timer.getFPGATimestamp() - time_stamp > 75) {
       // Enable climb controls here
@@ -519,7 +552,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    limelight.getEntry("camMode").setNumber(1);
+  }
 
   /** This function is called periodically when disabled. */
   @Override
@@ -537,13 +572,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when test mode is enabled. */
   @Override
-  public void testInit() {
-
-  }
+  public void testInit() {}
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {
-    
-  }
+  public void testPeriodic() {}
 }

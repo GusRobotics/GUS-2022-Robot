@@ -44,6 +44,11 @@ public class TurnPID {
         this.error = this.set_point - this.gyro.getYaw();
         this.dt = Timer.getFPGATimestamp() - this.last_time;
 
+        // Reverse if dictated
+        if(invert) {
+            this.error *= -1;
+        }
+
         // Integral (potentially cap if too large or reset on passing set point)
         if(Math.abs(this.error) < integral_range) {
             this.integral += this.error * this.dt;
@@ -59,12 +64,8 @@ public class TurnPID {
         // Output
         this.output = this.error * this.kP + this.integral * this.kI + this.derivative * this.kD;
 
-        if(invert) {
-            this.error *= -1;
-        }
-
         // Set motors to output
-        this.motor.set(this.output);
+        //this.motor.set(this.output);
 
         // Update variables
         this.last_time = Timer.getFPGATimestamp();
@@ -95,6 +96,7 @@ public class TurnPID {
         else {
             this.correct = false;
         }
+
         return false;
 
     }

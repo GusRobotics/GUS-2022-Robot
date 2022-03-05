@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
 import com.revrobotics.CANSparkMax;
 
 public class PrecisionDrive {
@@ -9,10 +10,12 @@ public class PrecisionDrive {
     private TurnPID rightTurnPID;
 
 
-    public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right) {
+    public PrecisionDrive(CANSparkMax m_left, CANSparkMax m_right, PigeonIMU gyro) {
         // Create controllers
         leftDistPID = new DistancePID(m_left);
         rightDistPID = new DistancePID(m_right);
+        leftTurnPID = new TurnPID(m_left, gyro);
+        rightTurnPID = new TurnPID(m_right, gyro);
     }
 
     /**
