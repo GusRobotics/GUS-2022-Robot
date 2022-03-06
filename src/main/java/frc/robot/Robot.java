@@ -64,6 +64,7 @@ public class Robot extends TimedRobot {
 
   // Auto options
   private static final String kDefaultAuto = "Two Ball Auto";
+  private static final String kTwoBallExtraDistance = "Two Ball Extra Distance Auto";
   private static final String kFourBall = "Four Ball Auto";
   private static final String kPidTuneAuto = "PID Tune Auto";
   private static final String kPIDTurnAuto = "Turn Test Auto";
@@ -130,6 +131,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Set auto options
     m_chooser.setDefaultOption("Two ball Auto", kDefaultAuto);
+    m_chooser.setDefaultOption("Two Ball Extra Distance Auto", kTwoBallExtraDistance);
     m_chooser.addOption("Four Ball", kFourBall);
     m_chooser.addOption("PID Tuner", kPidTuneAuto);
     m_chooser.addOption("Turn Test", kPIDTurnAuto);
@@ -296,7 +298,8 @@ public class Robot extends TimedRobot {
           case 1:
             // Go back and get ball
             if(auto_drive.pidStraight()) {
-              auto_drive.setDistance(-6.5);
+              time_stamp = Timer.getFPGATimestamp();
+              auto_drive.setDistance(-5.9);
               m_shooter.set(config.low_shot_power);
               m_intake.set(0);
               auto_stage++;
@@ -308,23 +311,76 @@ public class Robot extends TimedRobot {
             if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
               auto_drive.stop();
+              m_index.set(1);
               auto_stage++;
+            }
+
+            if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
+              intake_actuator.set(false);
             }
             break;
 
           case 3:
-            // Wait a moment
-            if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
-              time_stamp = Timer.getFPGATimestamp();
-              m_index.set(1);
+            // Shoot
+            if(Timer.getFPGATimestamp() - time_stamp > 0.65) {
+              auto_drive.setDistance(0);
+              m_index.set(0);
+              m_shooter.set(0);
               auto_stage++;
             }
             break;
 
-          case 4:
+          default:
+            // Finished
+            SmartDashboard.putString("Status", "Done");
+            auto_drive.stop();
+            m_index.set(0);
+            m_shooter.set(0);
+            break;
+          }
+        break;
+
+        case kTwoBallExtraDistance:
+        // Two ball auto
+        switch(auto_stage) {
+          case 0:
+            // Actuate and start intake
+            intake_actuator.set(true);
+            m_intake.set(1);
+
+            auto_drive.setDistance(4);
+            auto_stage++;
+            break;
+
+          case 1:
+            // Go back and get ball
+            if(auto_drive.pidStraight()) {
+              time_stamp = Timer.getFPGATimestamp();
+              auto_drive.setDistance(-6.9);
+              m_shooter.set(config.low_shot_power);
+              m_intake.set(0);
+              auto_stage++;
+            }
+            break;
+          
+          case 2:
+            // Drive towards goal
+            if(auto_drive.pidStraight()) {
+              time_stamp = Timer.getFPGATimestamp();
+              auto_drive.stop();
+              m_index.set(1);
+              auto_stage++;
+            }
+
+            if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
+              intake_actuator.set(false);
+            }
+            break;
+
+          case 3:
             // Shoot
-            if(Timer.getFPGATimestamp() - time_stamp > 2) {
-              auto_drive.setDistance(0.5);
+            if(Timer.getFPGATimestamp() - time_stamp > 0.65) {
+              auto_drive.setDistance(0);
               m_index.set(0);
               m_shooter.set(0);
               auto_stage++;
@@ -546,6 +602,11 @@ public class Robot extends TimedRobot {
       shooter_on = true;
       shooter_high = true;
     }
+    else if(joy_co.getAButton()) {
+      m_shooter.set(config.high_shot_far_power);
+      shooter_on = true;
+      shooter_high = true;
+    }
     else {
       m_shooter.set(0);
       shooter_on = false;
@@ -627,20 +688,13 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     limelight.getEntry("camMode").setNumber(1);
+    limelight.getEntry("ledMode").setNumber(1);
   }
 
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
     SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
-
-    double yaw = gyro.getYaw();
-    double pitch = gyro.getPitch();
-    double roll = gyro.getRoll();
-    
-    SmartDashboard.putNumber("Yaw", yaw);
-    SmartDashboard.putNumber("Pitch", pitch);
-    SmartDashboard.putNumber("Roll", roll);
   }
 
   /** This function is called once when test mode is enabled. */

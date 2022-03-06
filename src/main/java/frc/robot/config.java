@@ -35,7 +35,8 @@ public class config {
     public static final double rev_feet_conversion = 10/42.35;
     public static final int dist1_threshold = 500;
     public static final double low_shot_power = 0.42;
-    public static final double high_shot_power = 0.65;
+    public static final double high_shot_power = 0.75;
+    public static final double high_shot_far_power = 0.9;
     public static final double index_power = 0.8;
     public static final double high_index_run = 0.2;
     public static final double high_index_delay = 0.2;
