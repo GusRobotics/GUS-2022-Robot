@@ -10,10 +10,10 @@ public class DistancePID {
     private double set_point;
 
     // PID Constants
-    private double kP = 0.08;
-    private double kI = 0.25;
+    private double kP = 0.11;
+    private double kI = 0.3;
     private double kD = 0;
-    private double integral_range = 0.5;
+    private double integral_range = 1;
     private double max_integral = 1;
     private double allowed_error = 0.15;
     private double correct_time = 0.1;

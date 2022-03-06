@@ -342,7 +342,7 @@ public class Robot extends TimedRobot {
           case 1:
             // Go back and get ball
             if(auto_drive.pidStraight()) {
-              auto_drive.setDistance(-6.5);
+              auto_drive.setDistance(-6.4);
               m_shooter.set(config.low_shot_power);
               m_intake.set(0);
               auto_stage++;
@@ -370,7 +370,7 @@ public class Robot extends TimedRobot {
           case 4:
             // Shoot
             if(Timer.getFPGATimestamp() - time_stamp > 2) {
-              auto_drive.setDistance(0.5);
+              auto_drive.setDistance(1.15);
               m_index.set(0);
               m_shooter.set(0);
               auto_stage++;
@@ -380,24 +380,72 @@ public class Robot extends TimedRobot {
           case 5:
             // Drive back
             if(auto_drive.pidStraight()) {
-              time_stamp = Timer.getFPGATimestamp();
+              auto_drive.setAngle(-82);
               auto_drive.stop();
               auto_stage++;
             }
             break;
           
           case 6:
-            // Turn 65 degrees
-            if(Timer.getFPGATimestamp() - time_stamp < 0.7) {
-              m_drive_left.set(-0.7);
-              m_drive_right.set(0.7);
-            }
-            else {
-              auto_drive.stop();
+            // Turn clockwise
+            if(auto_drive.pidTurn()) {
+              auto_drive.setDistance(5);
+              time_stamp = Timer.getFPGATimestamp();
+              m_intake.set(1);
               auto_stage++;
             }
             break;
         
+        case 7:
+          // Go forward to collect two balls, index while driving
+          if(auto_drive.pidStraight()) {
+            auto_drive.setDistance(-5);
+            m_intake.set(0);
+            m_index.set(0);
+            auto_stage++;
+          }
+          else if(dist_sensor_1.getValue() < config.dist1_threshold) {
+            m_index.set(config.index_power);
+          }
+          else {
+            m_index.set(0);
+          }
+          break;
+        
+        case 8:
+          // Go back
+          if(auto_drive.pidStraight()) {
+            auto_drive.setAngle(82);
+            auto_stage++;
+          }
+          break;
+
+        case 9:
+          // Turn counterclockwise
+          if(auto_drive.pidTurn()) {
+            auto_drive.setDistance(1);
+            m_shooter.set(config.low_shot_power);
+            auto_stage++;
+          }
+          break;
+        
+        case 10:
+          // Drive up to goal with shooter on
+          if(auto_drive.pidStraight()) {
+            time_stamp = Timer.getFPGATimestamp();
+            auto_stage++;
+          }
+          break;
+
+        case 11:
+          // Shoot
+          if(Timer.getFPGATimestamp() - time_stamp > 2) {
+            auto_drive.setDistance(0.5);
+            m_index.set(0);
+            m_shooter.set(0);
+            auto_stage++;
+          }
+          break;
 
         default:
           // Finished

@@ -12,12 +12,12 @@ public class TurnPID {
     private double set_point;
 
     // PID Constants
-    private double kP = 0.0005;
-    private double kI = 0;
+    private double kP = 0.02;
+    private double kI = 0.02;
     private double kD = 0;
-    private double integral_range = 20;
+    private double integral_range = 10;
     private double max_integral = 1;
-    private double allowed_error = 0.15;
+    private double allowed_error = 1;
     private double correct_time = 0.1;
 
     // Global variables
@@ -65,7 +65,7 @@ public class TurnPID {
         this.output = this.error * this.kP + this.integral * this.kI + this.derivative * this.kD;
 
         // Set motors to output
-        //this.motor.set(this.output);
+        this.motor.set(this.output);
 
         // Update variables
         this.last_time = Timer.getFPGATimestamp();

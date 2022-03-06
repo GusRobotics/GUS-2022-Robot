@@ -64,8 +64,8 @@ public class PrecisionDrive {
      * @return - returns true when turning is done
      */
     public boolean pidTurn() {
-        boolean done_left = leftTurnPID.pidControl(true, "left_drive");
-        boolean done_right = rightTurnPID.pidControl(false, "right_drive");
+        boolean done_left = leftTurnPID.pidControl(false, "left_drive");
+        boolean done_right = rightTurnPID.pidControl(true, "right_drive");
 
         return (done_left && done_right);
     }
