@@ -35,6 +35,11 @@ public class PrecisionDrive {
         rightDistPID.setSetPoint(distance);
     }
 
+    public void setAllowedError(double error) {
+        leftDistPID.setAllowedError(error);
+        rightDistPID.setAllowedError(error);
+    }
+
     /**
      * PID Control for driving in a straight line with motors controlled seperatedly (combats drift)
      * @param leftDrive - left motor

@@ -69,7 +69,10 @@ public class Robot extends TimedRobot {
   private static final String kPIDTurnAuto = "Turn Test Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
- 
+  
+  private double shooter_power;
+  private final SendableChooser<Double> power_chooser = new SendableChooser<>();
+
   // Robot Mechanism Status Variables
    private boolean drive_high_gear = true;
    private boolean shift_released = true;
@@ -131,6 +134,11 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("PID Tuner", kPidTuneAuto);
     m_chooser.addOption("Turn Test", kPIDTurnAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    power_chooser.setDefaultOption("Low Power", config.low_shot_power);
+    power_chooser.addOption("High Power", config.high_shot_power);
+
+    SmartDashboard.putData("Power choices", power_chooser);
 
     // Set parallel motors to follow the leader
     m_drive_left2.follow(m_drive_left);
@@ -207,6 +215,7 @@ public class Robot extends TimedRobot {
 
   PrecisionDrive auto_drive;
   int auto_stage;
+  double start_time;
 
   @Override
   public void autonomousInit() {
@@ -214,11 +223,15 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
 
+    shooter_power = power_chooser.getSelected();
+
     auto_drive = new PrecisionDrive(m_drive_left, m_drive_right, gyro);
     auto_stage = 0;
 
     // Set robot in high gear
     drive_gear_shift.set(false);
+
+    start_time = Timer.getFPGATimestamp();
   }
 
   boolean done = false;
@@ -226,14 +239,15 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     SmartDashboard.putNumber("Auto Stage", auto_stage);
-
+    SmartDashboard.putNumber("Auto Time", Timer.getFPGATimestamp() - start_time);
+    if(Timer.getFPGATimestamp() - start_time <= 15) {
     switch (m_autoSelected) {
       case kPidTuneAuto:
         SmartDashboard.putString("Mode", "Test");
         // Put custom auto code here
         switch(auto_stage) {
           case 0:
-            auto_drive.setDistance(10);
+            auto_drive.setDistance(3);
             auto_stage++;
             break;
           case 1:
@@ -342,7 +356,8 @@ public class Robot extends TimedRobot {
           case 1:
             // Go back and get ball
             if(auto_drive.pidStraight()) {
-              auto_drive.setDistance(-6.4);
+              time_stamp = Timer.getFPGATimestamp();
+              auto_drive.setDistance(-5.9);
               m_shooter.set(config.low_shot_power);
               m_intake.set(0);
               auto_stage++;
@@ -354,53 +369,51 @@ public class Robot extends TimedRobot {
             if(auto_drive.pidStraight()) {
               time_stamp = Timer.getFPGATimestamp();
               auto_drive.stop();
+              m_index.set(1);
               auto_stage++;
+            }
+
+            if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
+              intake_actuator.set(false);
             }
             break;
 
           case 3:
-            // Wait a moment
-            if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
-              time_stamp = Timer.getFPGATimestamp();
-              m_index.set(1);
-              auto_stage++;
-            }
-            break;
-
-          case 4:
             // Shoot
-            if(Timer.getFPGATimestamp() - time_stamp > 2) {
-              auto_drive.setDistance(1.15);
+            if(Timer.getFPGATimestamp() - time_stamp > 0.65) {
+              auto_drive.setDistance(0);
               m_index.set(0);
               m_shooter.set(0);
               auto_stage++;
             }
             break;
 
-          case 5:
+          case 4:
             // Drive back
             if(auto_drive.pidStraight()) {
-              auto_drive.setAngle(-82);
+              auto_drive.setAngle(-70);
               auto_drive.stop();
               auto_stage++;
             }
             break;
           
-          case 6:
+          case 5:
             // Turn clockwise
             if(auto_drive.pidTurn()) {
-              auto_drive.setDistance(5);
+              auto_drive.setDistance(16);
               time_stamp = Timer.getFPGATimestamp();
               m_intake.set(1);
+              intake_actuator.set(true);
               auto_stage++;
             }
             break;
         
-        case 7:
+        case 6:
           // Go forward to collect two balls, index while driving
           if(auto_drive.pidStraight()) {
-            auto_drive.setDistance(-5);
-            m_intake.set(0);
+            time_stamp = Timer.getFPGATimestamp();
+            auto_drive.setDistance(-14);
+            auto_drive.setAllowedError(0.3);
             m_index.set(0);
             auto_stage++;
           }
@@ -412,38 +425,48 @@ public class Robot extends TimedRobot {
           }
           break;
         
-        case 8:
+        case 7:
           // Go back
           if(auto_drive.pidStraight()) {
-            auto_drive.setAngle(82);
+            auto_drive.setAngle(25);
+            m_intake.set(0);
+            m_index.set(0);
+            auto_stage++;
+          }
+          else if(Timer.getFPGATimestamp() - time_stamp > 2) {
+            m_intake.set(0);
+            intake_actuator.set(false);
+            m_shooter.set(config.low_shot_power);
+          }
+
+          if(dist_sensor_1.getValue() < config.dist1_threshold) {
+            m_index.set(config.index_power);
+          }
+          else {
+            m_index.set(0);
+          }
+          break;
+
+        case 8:
+          // Turn counterclockwise
+          if(auto_drive.pidTurn()) {
+            time_stamp = Timer.getFPGATimestamp();
+            m_drive_left.set(0.15);
+            m_drive_right.set(0.15);
+            m_index.set(1);
             auto_stage++;
           }
           break;
 
         case 9:
-          // Turn counterclockwise
-          if(auto_drive.pidTurn()) {
-            auto_drive.setDistance(1);
-            m_shooter.set(config.low_shot_power);
-            auto_stage++;
-          }
-          break;
-        
-        case 10:
-          // Drive up to goal with shooter on
-          if(auto_drive.pidStraight()) {
-            time_stamp = Timer.getFPGATimestamp();
-            auto_stage++;
-          }
-          break;
-
-        case 11:
           // Shoot
           if(Timer.getFPGATimestamp() - time_stamp > 2) {
-            auto_drive.setDistance(0.5);
             m_index.set(0);
             m_shooter.set(0);
             auto_stage++;
+          }
+          else if(Timer.getFPGATimestamp() - time_stamp > 0.2) {
+            auto_drive.stop();
           }
           break;
 
@@ -461,6 +484,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putString("!", "No Auto");
         break;
     }
+  }
   }
 
   /** This function is called once when teleop is enabled. */
@@ -499,23 +523,13 @@ public class Robot extends TimedRobot {
     }
     
     // Intake (Toggle)
-    if(joy_co.getLeftBumper() && intake_released) {
-      run_intake = (!run_intake);
-      intake_released = false;
-    }
-    else if(!joy_co.getLeftBumper()){
-      intake_released = true;
-    }
-    if(run_intake) {
+    if(joy_co.getLeftBumper()) {
       m_intake.set(1);
     }
-
-    // Outtake (Hold)
-    if(joy_co.getBackButton()) {
+    else if(joy_co.getBackButton()) {
       m_intake.set(-1);
-      run_intake = false;
     }
-    else if(!run_intake) {
+    else {
       m_intake.set(0);
     }
    

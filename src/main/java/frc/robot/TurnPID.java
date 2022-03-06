@@ -12,12 +12,12 @@ public class TurnPID {
     private double set_point;
 
     // PID Constants
-    private double kP = 0.02;
-    private double kI = 0.02;
+    private double kP = 0.018;
+    private double kI = 0.07;
     private double kD = 0;
-    private double integral_range = 10;
+    private double integral_range = 5;
     private double max_integral = 1;
-    private double allowed_error = 1;
+    private double allowed_error = 3;
     private double correct_time = 0.1;
 
     // Global variables
