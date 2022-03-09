@@ -20,6 +20,7 @@ public class config {
     // Solenoid channels
     public static final int drive_channel = 0;
     public static final int intake_channel = 1;
+    public static final int climber_channel = 2;
 
     // Analog channels
     public static final int index_dist_sensor_channel = 0;
@@ -34,12 +35,15 @@ public class config {
     // Constant Robot Stats
     public static final double rev_feet_conversion = 10/42.35;
     public static final int dist1_threshold = 500;
+
+    // Index power
+    public static final double index_power = 0.8;
+    public static final double high_shot_index_power = 0.5;
+
+    // Shot power
     public static final double low_shot_power = 0.42;
     public static final double high_shot_power = 0.75;
     public static final double high_shot_far_power = 0.9;
-    public static final double index_power = 0.8;
-    public static final double high_index_run = 0.2;
-    public static final double high_index_delay = 0.2;
 
     // Climber hook encoder positions (absolute zero is the initial position) - these are not tuned
     public static final double hooks_low = 5;

@@ -95,6 +95,7 @@ public class Robot extends TimedRobot {
   // Controller
   private static XboxController joy_base = new XboxController(0);
   private static XboxController joy_co = new XboxController(1);
+  private static XboxController joy_climb = new XboxController(2);
 
   // Add PDB for data reading (optional)
   //PowerDistributionPanel examplePD = new PowerDistribution(0, ModuleType.kAutomatic);
@@ -122,6 +123,7 @@ public class Robot extends TimedRobot {
   Compressor compressor = new Compressor(config.pcm_ID, PneumaticsModuleType.CTREPCM);
   Solenoid drive_gear_shift = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.drive_channel);
   Solenoid intake_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.intake_channel);
+  Solenoid climber_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.climber_channel);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -622,7 +624,7 @@ public class Robot extends TimedRobot {
       else if (shooter_on) {
         // Index freely when the shooter is on with the high shot exception
         if(shooter_high) {
-          m_index.set(0.5);
+          m_index.set(config.high_shot_index_power);
         }
         else {
           m_index.set(config.index_power);
@@ -654,33 +656,34 @@ public class Robot extends TimedRobot {
       m_index.set(0);
     }
 
-    /**
-    // Climber
-    if(joy_co.getYButton()) {
+    // Right Climber Arm
+    if(joy_climb.getLeftBumper()) {
       m_climber_right.set(1);
     }
-    else if(joy_co.getAButton()) {
+    else if(joy_co.getLeftTriggerAxis() > 0.8) {
       m_climber_right.set(-1);
     }
     else {
       m_climber_right.set(0);
     }
 
-    if(joy_base.getYButton()) {
+    // Left Climber Arm
+    if(joy_climb.getRightBumper()) {
       m_climber_left.set(1);
     }
-    else if(joy_base.getAButton()) {
+    else if(joy_climb.getRightTriggerAxis() > 0.8) {
       m_climber_left.set(-1);
     }
     else {
       m_climber_left.set(0);
     }
-    */
 
-
-    // Endgame
-    if(Timer.getFPGATimestamp() - time_stamp > 75) {
-      // Enable climb controls here
+    // Pneumatics
+    if (joy_climb.getBButton()) {
+      climber_actuator.set(true);
+    }
+    else {
+      climber_actuator.set(false);
     }
   }
 
