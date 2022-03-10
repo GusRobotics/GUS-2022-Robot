@@ -166,8 +166,8 @@ public class Robot extends TimedRobot {
 
     // Invert backwards motors
     m_drive_right.setInverted(true);
-    m_climber_right.setInverted(true);
-    m_climber_left.setInverted(true);
+    // m_climber_right.setInverted(true);
+    // m_climber_left.setInverted(true);
 
     // Set current limits
     m_drive_left.setSmartCurrentLimit(config.drive_current_limit);
@@ -660,7 +660,7 @@ public class Robot extends TimedRobot {
     if(joy_climb.getLeftBumper()) {
       m_climber_right.set(1);
     }
-    else if(joy_co.getLeftTriggerAxis() > 0.8) {
+    else if(joy_climb.getLeftTriggerAxis() > 0.8) {
       m_climber_right.set(-1);
     }
     else {
