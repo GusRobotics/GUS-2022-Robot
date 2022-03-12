@@ -149,7 +149,7 @@ public class Robot extends TimedRobot {
     m_drive_left3.follow(m_drive_left);
     m_drive_right2.follow(m_drive_right);
     m_drive_right3.follow(m_drive_right);
-    m_shooter2.follow(m_shooter);
+    // m_shooter2.follow(m_shooter);
 
     // For all motors, reset to factory defaults
     m_drive_left.restoreFactoryDefaults();
@@ -303,6 +303,7 @@ public class Robot extends TimedRobot {
               time_stamp = Timer.getFPGATimestamp();
               auto_drive.setDistance(-5.9);
               m_shooter.set(config.low_shot_power);
+              m_shooter2.set(config.low_shot_power);
               m_intake.set(0);
               auto_stage++;
             }
@@ -328,6 +329,7 @@ public class Robot extends TimedRobot {
               auto_drive.setDistance(0);
               m_index.set(0);
               m_shooter.set(0);
+              m_shooter2.set(0);
               auto_stage++;
             }
             break;
@@ -338,6 +340,7 @@ public class Robot extends TimedRobot {
             auto_drive.stop();
             m_index.set(0);
             m_shooter.set(0);
+            m_shooter2.set(0);
             break;
           }
         break;
@@ -360,6 +363,7 @@ public class Robot extends TimedRobot {
               time_stamp = Timer.getFPGATimestamp();
               auto_drive.setDistance(-6.9);
               m_shooter.set(config.low_shot_power);
+              m_shooter2.set(config.low_shot_power);
               m_intake.set(0);
               auto_stage++;
             }
@@ -385,6 +389,7 @@ public class Robot extends TimedRobot {
               auto_drive.setDistance(0);
               m_index.set(0);
               m_shooter.set(0);
+              m_shooter2.set(0);
               auto_stage++;
             }
             break;
@@ -395,6 +400,7 @@ public class Robot extends TimedRobot {
             auto_drive.stop();
             m_index.set(0);
             m_shooter.set(0);
+            m_shooter2.set(0);
             break;
           }
         break;
@@ -417,6 +423,7 @@ public class Robot extends TimedRobot {
               time_stamp = Timer.getFPGATimestamp();
               auto_drive.setDistance(-5.9);
               m_shooter.set(config.low_shot_power);
+              m_shooter2.set(config.low_shot_power);
               m_intake.set(0);
               auto_stage++;
             }
@@ -442,6 +449,7 @@ public class Robot extends TimedRobot {
               auto_drive.setDistance(0);
               m_index.set(0);
               m_shooter.set(0);
+              m_shooter2.set(0);
               auto_stage++;
             }
             break;
@@ -495,6 +503,7 @@ public class Robot extends TimedRobot {
             m_intake.set(0);
             intake_actuator.set(false);
             m_shooter.set(config.low_shot_power);
+            m_shooter2.set(config.low_shot_power);
           }
 
           if(dist_sensor_1.getValue() < config.dist1_threshold) {
@@ -521,6 +530,7 @@ public class Robot extends TimedRobot {
           if(Timer.getFPGATimestamp() - time_stamp > 2) {
             m_index.set(0);
             m_shooter.set(0);
+            m_shooter2.set(0);
             auto_stage++;
           }
           else if(Timer.getFPGATimestamp() - time_stamp > 0.2) {
@@ -534,6 +544,7 @@ public class Robot extends TimedRobot {
           auto_drive.stop();
           m_index.set(0);
           m_shooter.set(0);
+          m_shooter2.set(0);
           break;
         }
       break;
@@ -550,6 +561,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     run_intake = false;
     time_stamp = Timer.getFPGATimestamp();
+    limelight.getEntry("ledMode").setNumber(1);
   }
 
   /** This function is called periodically during operator control. */
@@ -595,22 +607,26 @@ public class Robot extends TimedRobot {
     if(joy_co.getLeftTriggerAxis() > 0.8) {
       // Low Power
       m_shooter.set(config.low_shot_power);
+      m_shooter2.set(config.low_shot_power);
       shooter_on = true;
       shooter_high = false;
     }
     else if(joy_co.getRightTriggerAxis() > 0.8) {
       // High Power
       m_shooter.set(config.high_shot_power);
+      m_shooter2.set(config.high_shot_power);
       shooter_on = true;
       shooter_high = true;
     }
     else if(joy_co.getAButton()) {
       m_shooter.set(config.high_shot_far_power);
+      m_shooter2.set(config.high_shot_far_power);
       shooter_on = true;
       shooter_high = true;
     }
     else {
       m_shooter.set(0);
+      m_shooter2.set(0);
       shooter_on = false;
     }
 
