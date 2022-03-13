@@ -11,11 +11,11 @@ public class DistancePID {
 
     // PID Constants
     private double kP = 0.068;
-    private double kI = 0.07;
+    private double kI = 0.085;
     private double kD = 0;
     private double integral_range = 0.5;
     private double max_integral = 1;
-    private double allowed_error = 0.15;
+    private double allowed_error = 0.25;
     private double correct_time = 0.1;
 
     // Global variables
@@ -46,13 +46,19 @@ public class DistancePID {
         this.error = this.set_point - motor.getEncoder().getPosition()*config.rev_feet_conversion;
         this.dt = Timer.getFPGATimestamp() - this.last_time;
 
-        // Integral (potentially cap if too large or reset on passing set point)
+        // Integral
         if(Math.abs(this.error) < integral_range) {
             this.integral += this.error * this.dt;
         }
 
+        // Cap integral
         if(Math.abs(this.integral) > this.max_integral) {
             this.integral = this.max_integral * (Math.abs(this.integral) / this.integral);
+        }
+
+        // Reset integral on passing set point
+        if(this.error * this.last_error < 0) {
+            this.integral = 0;
         }
 
         // Derivative
