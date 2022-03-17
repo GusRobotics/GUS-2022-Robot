@@ -12,7 +12,7 @@ public class TurnPID {
     private double set_point;
 
     // PID Constants
-    private double kP = 0.018;
+    private double kP = 0.02;
     private double kI = 0.07;
     private double kD = 0;
     private double integral_range = 5;

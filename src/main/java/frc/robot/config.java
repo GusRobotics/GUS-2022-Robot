@@ -38,15 +38,21 @@ public class config {
 
     // Index power
     public static final double index_power = 0.8;
-    public static final double high_shot_index_power = 1;
+    public static final double high_shot_index_power = 0.8;
 
     // Shot power
-    public static final double low_shot_power = 0.42;
-    public static final double high_shot_power = 0.655;
+    // Original .42
+    public static final double low_shot_power = 0.36;
+    // Start 0.72
+    public static final double high_shot_power = 0.7;
     public static final double high_shot_far_power = 0.9;
 
     // Climber hook encoder positions (absolute zero is the initial position) - these are not tuned
     public static final double hooks_low = 5;
     public static final double hooks_medium = 10;
     public static final double hooks_high = 15;
+
+    public static final double controller_threshold = 0.10;
+
+    // High gear is false
 }
