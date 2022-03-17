@@ -2,19 +2,6 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-/**
-Intake Controls: [UPDATE COMPLETE]
-Base Controller (PS4):
- - Drive: Joysticks, tank
- - Drive Shift: TOGGLE L1. This should start in high gear
- - Intake Actuation: HOLD L2 to extend
- - Index: HOLD R1 for index up
-Co Controller (Logitech):
- - Intake - TOGGLE LB for intake/off, HOLD BACK for outtake
- - Shooter - HOLD LT for low, HOLD RT for high
- - Index - RB to index to point, HOLD D-DOWN for index down
-*/
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -79,16 +66,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<Double> power_chooser_2 = new SendableChooser<>();
 
   // Robot Mechanism Status Variables
-   private boolean drive_high_gear = true;
-   private boolean shift_released = true;
-
-   private boolean run_intake = false;
-   private boolean intake_released = false;
-
    private boolean index_on = false;
-   private double index_time_stamp = 0;
-   private boolean index_to_shooter = false;
-
    private boolean shooter_on = false;
    private boolean shooter_high = false; 
 
@@ -653,7 +631,6 @@ public class Robot extends TimedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    run_intake = false;
     time_stamp = Timer.getFPGATimestamp();
 
     start_time = Timer.getFPGATimestamp();
@@ -668,43 +645,43 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Time Remaining", 135 - (Timer.getFPGATimestamp() - start_time));
    
-    // Run Drive (Tank)
+    // Run Drive (Choose controller in use and run tank drive with thresolds)
     if(Math.abs(joy_base.getRightY()) > config.controller_threshold || Math.abs(joy_base.getLeftY()) > config.controller_threshold) {
+      // Drive controller
       if(Math.abs(joy_base.getLeftY()) > config.controller_threshold) {
         m_drive_left.set(joy_base.getLeftY());
+      }
+      else {
+        m_drive_left.set(0);
       }
       if(Math.abs(joy_base.getRightY()) > config.controller_threshold) {
         m_drive_right.set(joy_base.getRightY());
       }
+      else {
+        m_drive_right.set(0);
+      }
     }
-    else if(Math.abs(joy_climb.getRightY()) > 0.05 || Math.abs(joy_base.getLeftY()) > 0.05){
+    else if(Math.abs(joy_climb.getRightY()) > config.controller_threshold || Math.abs(joy_base.getLeftY()) > config.controller_threshold){
+      // Climb controller
       if(Math.abs(joy_climb.getLeftY()) > config.controller_threshold) {
         m_drive_left.set(joy_climb.getLeftY());
       }
+      else {
+        m_drive_left.set(0);
+      }
       if(Math.abs(joy_climb.getRightY()) > config.controller_threshold) {
         m_drive_right.set(joy_climb.getRightY());
+      }
+      else {
+        m_drive_right.set(0);
       }
     }
     else {
       m_drive_left.set(0);
       m_drive_right.set(0);
     }
-   
-    // Drive Shift (Toggle)
-    /**
-    if (joy_base.getRightBumper()) { 
-      if (shift_released) {
-        drive_high_gear = (!drive_high_gear);
-      }
-      shift_released = false;
-    }
-    else {
-      shift_released = true;
-    }
-    drive_gear_shift.set(drive_high_gear);
-    */
 
-    // Hold for high
+    // Drive Shift (Hold for high gear, default is low gear)
     if(joy_base.getRightTriggerAxis() > 0.8) {
       drive_gear_shift.set(false);
     }
@@ -712,7 +689,7 @@ public class Robot extends TimedRobot {
       drive_gear_shift.set(true);
     }
 
-    // Intake Actuation (Hold)
+    // Intake Actuation (Hold for extension, default is retracted)
     if (joy_base.getLeftTriggerAxis() > 0.8) {
       intake_actuator.set(true);
     }
@@ -720,7 +697,7 @@ public class Robot extends TimedRobot {
       intake_actuator.set(false);
     }
     
-    // Intake (Toggle)
+    // Intake (Hold Left Top for intake, Hold back for outtake)
     if(joy_co.getLeftBumper()) {
       m_intake.set(1);
     }
@@ -731,7 +708,7 @@ public class Robot extends TimedRobot {
       m_intake.set(0);
     }
    
-    // Shooter
+    // Shooter (Deterine power from button)
     if(joy_co.getLeftTriggerAxis() > 0.8) {
       // Low Power
       m_shooter.set(config.low_shot_power);
@@ -758,7 +735,7 @@ public class Robot extends TimedRobot {
       shooter_on = false;
     }
 
-    // Index
+    // Index (Auto index brings ball from intake to before the shooter. Only index from that point if the shooter is running)
     if(joy_base.getLeftBumper()) {
       // Base Controls
       if(dist_sensor_1.getValue() < config.dist1_threshold) {

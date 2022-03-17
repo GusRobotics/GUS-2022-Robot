@@ -1,0 +1,22 @@
+TELEOP CONTROLS:
+
+Base Controller (Logitech):
+ - Drive              | Joysticks, tank
+ - Drive Shift        | Hold RB for high gear, default is low gear
+ - Intake Actuation   | HOLD LB to extend, default is retracted
+ - Index              | Hold left top (only indexes if the sensor is not blocked and or if the shooter is running)
+
+Co Controller (Logitech):
+ - Intake             | HOLD LB
+ - Outtake            | HOLD Back
+ - Low Shot           | HOLD LB
+ - High Shot          | HOLD RB
+ - Extreme Shot       | HOLD Button A
+ - Auto Index         | PRESS Y Button
+ - Reverse Index      | HOLD D-Down Button
+
+ Climb Controller (Logitech LED):
+ - Drive              | Joysticks, tank (if base driver needs to climb)
+ - Left Arm           | HOLD LT for up, HOLD LB for down
+ - Right Arm          | HOLD RT for up, HOLD RT for down
+ - Arm Actuation      | HOLD B to actuate the arms
