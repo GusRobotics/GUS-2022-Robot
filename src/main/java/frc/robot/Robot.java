@@ -507,7 +507,13 @@ public class Robot extends TimedRobot {
           // Go forward to collect two balls, index while driving
           if(auto_drive.pidStraight()) {
             time_stamp = Timer.getFPGATimestamp();
-            auto_drive.setDistance(-14.25);
+
+            if(shooter_power_2 == config.low_shot_power) {
+              auto_drive.setDistance(-14.25);
+            }
+            else {
+              auto_drive.setDistance(-9);
+            }
             auto_drive.setAllowedError(0.3);
             m_index.set(0);
             auto_stage++;
@@ -524,7 +530,13 @@ public class Robot extends TimedRobot {
           // Go back
           if(auto_drive.pidStraight()) {
             drive_gear_shift.set(true);
-            auto_drive.setAngle(50);
+
+            if(shooter_power_2 == config.low_shot_power) {
+              auto_drive.setAngle(50);
+            }
+            else {
+              auto_drive.setAngle(45);
+            }
             m_intake.set(0);
             m_index.set(0);
             auto_stage++;
@@ -532,6 +544,10 @@ public class Robot extends TimedRobot {
           else if(Timer.getFPGATimestamp() - time_stamp > 2) {
             m_intake.set(0);
             intake_actuator.set(false);
+            m_shooter.set(shooter_power_2);
+            m_shooter2.set(shooter_power_2);
+          }
+          else if(shooter_power_2 == config.high_shot_power) {
             m_shooter.set(shooter_power_2);
             m_shooter2.set(shooter_power_2);
           }
@@ -555,20 +571,38 @@ public class Robot extends TimedRobot {
             auto_stage++;
           }
           break;
-        /**
+        
         case 9:
           // Shoot
-          if(Timer.getFPGATimestamp() - time_stamp > 2) {
+          if(shooter_power_2 == config.low_shot_power && Timer.getFPGATimestamp() - time_stamp > 2) {
             m_index.set(0);
             m_shooter.set(0);
             m_shooter2.set(0);
+            auto_stage++;
+          }
+          else if(shooter_power_2 == config.high_shot_power && Timer.getFPGATimestamp() - time_stamp > 0.3) {
+            auto_drive.stop();
+            m_index.set(0);
             auto_stage++;
           }
           else if(Timer.getFPGATimestamp() - time_stamp > 0.2) {
             auto_drive.stop();
           }
           break;
-        */
+
+        case 10:
+          // Fire
+          if(Timer.getFPGATimestamp() - time_stamp > 2) {
+            m_index.set(0.5);
+          }
+          if(Timer.getFPGATimestamp() - time_stamp > 3) {
+            m_index.set(0);
+            m_shooter.set(0);
+            m_shooter2.set(0);
+            auto_stage++;
+          }
+          break;
+
         default:
           // Finished
           SmartDashboard.putString("Status", "Done");
@@ -643,10 +677,39 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
+    // Limelight on
+    limelight.getEntry("camMode").setNumber(0);
+    limelight.getEntry("ledMode").setNumber(3);
+
+    double limelight_target = limelight.getEntry("tv").getDouble(0.0);
+    SmartDashboard.putNumber("Target detected", limelight_target);
+
+
+    double limelight_x = limelight.getEntry("tx").getDouble(0.0);
+    double limelight_y = limelight.getEntry("ty").getDouble(0.0);
+
+    SmartDashboard.putNumber("Target x", limelight_x);
+    SmartDashboard.putNumber("Target y", limelight_y);
+
+    double range = 2;
+    double kP = 0.04;
+
+    if(Math.abs(limelight_x) < range) {
+      SmartDashboard.putBoolean("Lined Up", true);
+    }
+    else {
+      SmartDashboard.putBoolean("Lined Up", false);
+    }
+    
+
     SmartDashboard.putNumber("Time Remaining", 135 - (Timer.getFPGATimestamp() - start_time));
    
     // Run Drive (Choose controller in use and run tank drive with thresolds)
-    if(Math.abs(joy_base.getRightY()) > config.controller_threshold || Math.abs(joy_base.getLeftY()) > config.controller_threshold) {
+    if(joy_base.getXButton() && Math.abs(limelight_x) > range) {
+      m_drive_left.set(-limelight_x * kP);
+      m_drive_right.set(limelight_x * kP);
+    }
+    else if(Math.abs(joy_base.getRightY()) > config.controller_threshold || Math.abs(joy_base.getLeftY()) > config.controller_threshold) {
       // Drive controller
       if(Math.abs(joy_base.getLeftY()) > config.controller_threshold) {
         m_drive_left.set(joy_base.getLeftY());
@@ -735,6 +798,8 @@ public class Robot extends TimedRobot {
       shooter_on = false;
     }
 
+    SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
+
     // Index (Auto index brings ball from intake to before the shooter. Only index from that point if the shooter is running)
     if(joy_base.getLeftBumper()) {
       // Base Controls
@@ -820,6 +885,8 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
+    limelight.getEntry("camMode").setNumber(1);
+    limelight.getEntry("ledMode").setNumber(1);
   }
 
   /** This function is called once when test mode is enabled. */
