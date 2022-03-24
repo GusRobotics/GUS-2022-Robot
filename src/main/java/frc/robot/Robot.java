@@ -876,17 +876,12 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {
-    limelight.getEntry("camMode").setNumber(1);
-    limelight.getEntry("ledMode").setNumber(1);
-  }
+  public void disabledInit() {}
 
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
     SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
-    limelight.getEntry("camMode").setNumber(1);
-    limelight.getEntry("ledMode").setNumber(1);
   }
 
   /** This function is called once when test mode is enabled. */
