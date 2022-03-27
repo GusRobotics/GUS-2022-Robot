@@ -69,8 +69,7 @@ public class Robot extends TimedRobot {
   // Robot Mechanism Status Variables
    private boolean index_on = false;
    private boolean shooter_on = false;
-   private boolean shooter_high = false; 
-   private double distance_to_goal = 0;
+   private boolean shooter_high = false;
 
    // General time stamp in global scope because of iterative stuff
    private double time_stamp = 0;
@@ -131,11 +130,13 @@ public class Robot extends TimedRobot {
 
     // Start position chooser
     start_position_chooser.setDefaultOption("Hanger Side", config.hangerSide);
-    start_position_chooser.addOption("Wall Side", config.hangerSide);
+    start_position_chooser.addOption("Wall Side", config.wallSide);
+    SmartDashboard.putData("Start Position", start_position_chooser);
 
     // Shot power chooser for relevant autonomous
     shot_power_chooser.setDefaultOption("Low Shot", config.low_shot_power);
     shot_power_chooser.addOption("High Shot", config.high_shot_power);
+    SmartDashboard.putData("Shot Power", shot_power_chooser);
 
     // Set parallel motors to follow the leader
     m_drive_left2.follow(m_drive_left);
@@ -341,10 +342,13 @@ public class Robot extends TimedRobot {
               intake_actuator.set(true);
               m_intake.set(1);
 
+              m_shooter.set(0.48);
+              m_shooter2.set(0.48);
+
               if(start_position.equals(config.hangerSide)) {
                 auto_drive.setDistance(4);
               }
-              else if(start_position.equals(config.wallSide)) {
+              else {
                 auto_drive.setDistance(3);
               }
               auto_stage++;
@@ -354,10 +358,6 @@ public class Robot extends TimedRobot {
               // Initialize if the robot drives forward for a low shot or shoots long
               if(auto_drive.pidStraight()) {
                 time_stamp = Timer.getFPGATimestamp();
-                
-                // !!!!! This will have to change when limelight based power is tuned
-                m_shooter.set(config.high_shot_power);
-                m_shooter2.set(config.high_shot_power);
                 auto_drive.stop();
                 m_intake.set(0);
                 auto_stage++;
@@ -366,7 +366,7 @@ public class Robot extends TimedRobot {
 
             case 2:
               // Delay
-              if(Timer.getFPGATimestamp() - time_stamp > 1) {
+              if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
                 time_stamp = Timer.getFPGATimestamp();
                 m_index.set(0.5);
                 auto_stage++;
@@ -375,22 +375,11 @@ public class Robot extends TimedRobot {
 
             case 3:
               // Index to shoot
-              if(Timer.getFPGATimestamp() - time_stamp > 0.3) {
-                time_stamp = Timer.getFPGATimestamp();
-                auto_drive.setDistance(0);
-                m_index.set(0);
-                intake_actuator.set(false);
-                auto_stage++;
-              }
-              break;
-
-            case 4:
-              // Fire
               if(Timer.getFPGATimestamp() - time_stamp > 2) {
-                m_index.set(0.5);
-              }
-              if(Timer.getFPGATimestamp() - time_stamp > 3) {
-                auto_drive.setAngle(-115);
+                time_stamp = Timer.getFPGATimestamp();
+                auto_drive.setAngle(-110);
+                drive_gear_shift.set(true);
+                intake_actuator.set(false);
                 m_index.set(0);
                 m_shooter.set(0);
                 m_shooter2.set(0);
@@ -398,23 +387,61 @@ public class Robot extends TimedRobot {
               }
               break;
 
-            case 5:
+            case 4:
+              // Turn to third ball
               if(auto_drive.pidTurn()) {
-                auto_drive.setDistance(7);
+                auto_drive.setDistance(12);
+                drive_gear_shift.set(false);
+                m_shooter.set(0.48);
+                m_shooter2.set(0.48);
                 m_intake.set(1);
                 intake_actuator.set(true);
                 auto_stage++;
               }
               break;
 
+            case 5:
+              // Drive to third ball
+              if(auto_drive.pidStraight()) {
+                time_stamp = Timer.getFPGATimestamp();
+                auto_drive.stop();
+                auto_drive.setAngle(50);
+                drive_gear_shift.set(true);
+                auto_stage++;
+              }
+              break;
+
             case 6:
-              auto_drive.stop();
+              // Turn to goal
+              if(Timer.getFPGATimestamp() - time_stamp > 0.3 && auto_drive.pidTurn()) {
+                auto_drive.stop();
+                time_stamp = Timer.getFPGATimestamp();
+                m_index.set(0.5);
+                drive_gear_shift.set(false);
+                auto_stage++;
+              }
+              break;
+
+            case 7:
+              // Fire
+              if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
+                m_index.set(0);
+                m_shooter.set(0);
+                m_shooter2.set(0);
+                auto_stage++;
+              }
+              break;
+
+            case 8:
+              // Go to fourth and fifth balls
+              auto_stage++;
               break;
 
             default:
               // Finished
               SmartDashboard.putString("Status", "Done");
               auto_drive.stop();
+              m_intake.set(0);
               m_index.set(0);
               m_shooter.set(0);
               m_shooter2.set(0);

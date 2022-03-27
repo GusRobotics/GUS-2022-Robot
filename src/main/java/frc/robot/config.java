@@ -43,9 +43,7 @@ public class config {
     public static final double high_shot_index_power = 0.8;
 
     // Shot power
-    // Original .42
     public static final double low_shot_power = 0.435;
-    // 0.72 works for behind the tarmac
     public static final double high_shot_power = 0.70;
     public static final double high_shot_far_power = 0.9;
 
