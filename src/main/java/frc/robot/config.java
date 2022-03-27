@@ -1,6 +1,8 @@
 package frc.robot;
 
 public class config {
+    // All measurements are in feet for distance and degrees for angle by default
+
     // CAN IDs- reserved: (RoboRio, 0), (PDB, 1)
     public static final int drive_left1_ID = 2;
     public static final int drive_left2_ID = 3;
@@ -46,6 +48,21 @@ public class config {
     // 0.72 works for behind the tarmac
     public static final double high_shot_power = 0.70;
     public static final double high_shot_far_power = 0.9;
+
+    // Field constants (in feet)
+    public static final double high_goal_tape_height = 103/12.0;
+    public static final double practice_tape_height = 72.5/12.0;
+
+    // Robot physical constants
+    public static final double camera_angle = 18;
+    public static final double camera_height = 31/12.0;
+
+    // Lining up to shoot
+    public static final double shot_horizontal_angle_range = 2;
+
+    // Start positions
+    public static final String hangerSide = "Hangar Tarmac";
+    public static final String wallSide = "Side Tarmac";
 
     // Climber hook encoder positions (absolute zero is the initial position) - these are not tuned
     public static final double hooks_low = 5;
