@@ -1,0 +1,46 @@
+---------------------------------------------------------------------------------------------------------
+TOP PRIORITIES
+
+Variable Distance shooter
+ - Need practical data to create a model of distance and power
+ - Check on reasonable extreme bounds, relative accuracy
+
+Four/Five Ball High Auto
+ - Methods all exist, just a matter of tuning distances and cutting down time
+---------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------
+POTENTIAL AUTOMATION
+
+Rewrite Subsystems
+ - Drivetrain, index, and intake classes are absent or sketchy, so write some
+ - This could be a good programming excersize for new people
+
+Color Vision Processing:
+ - Consider using GRIP for color vision processing with balls: autonomous and teleoperated implications. 
+ - Would identifying bumpers as balls be an issue?
+ - How could this be implemented in teleop?
+
+ Real Time Angle Adjustment for High Shot
+  - Realigning during approach in terms of angle
+
+ Tracking Balls in Robot
+  - Through cameras or color sensors, detect balls that enter the robot
+  - Retract intake if there are two of the right color
+  - Spit out balls of the wrong color
+  - Hilight nearest ball
+---------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------
+CONTROL SYSTEM UPGRADES
+
+Controller Rumble
+ - Get controller to move in relation to certain tasks
+
+LEDs
+ - Get the LEDs on the robot to signify certain points of the match
+
+Audio Feedback
+ - Drive station makes noise to alert drives of certain things
+ - Some research tells me this is both possible and used by 330 to some success (beep for turret good)
+---------------------------------------------------------------------------------------------------------
