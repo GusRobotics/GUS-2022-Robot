@@ -102,6 +102,9 @@ public class Robot extends TimedRobot {
   int auto_stage;
   double start_time;
 
+  // Create shooter
+  Shooter shooter = new Shooter(m_shooter, m_shooter2);
+
   // Initialize all sensors 
   PigeonIMU gyro = new PigeonIMU(config.pigeon_ID);
   AnalogInput dist_sensor_1 = new AnalogInput(config.index_dist_sensor_channel);
@@ -288,8 +291,7 @@ public class Robot extends TimedRobot {
                   auto_drive.setDistance(-5.9);
                 }
 
-                m_shooter.set(config.low_shot_power);
-                m_shooter2.set(config.low_shot_power);
+                shooter.setPowerLow();
                 m_intake.set(0);
                 auto_stage++;
               }
@@ -314,8 +316,7 @@ public class Robot extends TimedRobot {
               if(Timer.getFPGATimestamp() - time_stamp > 0.65) {
                 auto_drive.setDistance(0);
                 m_index.set(0);
-                m_shooter.set(0);
-                m_shooter2.set(0);
+                shooter.stop();
                 auto_stage++;
               }
               break;
@@ -325,8 +326,7 @@ public class Robot extends TimedRobot {
               SmartDashboard.putString("Status", "Done");
               auto_drive.stop();
               m_index.set(0);
-              m_shooter.set(0);
-              m_shooter2.set(0);
+              shooter.stop();
               break;
           }
         }
@@ -342,8 +342,7 @@ public class Robot extends TimedRobot {
               intake_actuator.set(true);
               m_intake.set(1);
 
-              m_shooter.set(0.48);
-              m_shooter2.set(0.48);
+              shooter.setPowerLow();
 
               if(start_position.equals(config.hangerSide)) {
                 auto_drive.setDistance(4);
@@ -381,8 +380,7 @@ public class Robot extends TimedRobot {
                 drive_gear_shift.set(true);
                 intake_actuator.set(false);
                 m_index.set(0);
-                m_shooter.set(0);
-                m_shooter2.set(0);
+                shooter.stop();
                 auto_stage++;
               }
               break;
@@ -392,8 +390,7 @@ public class Robot extends TimedRobot {
               if(auto_drive.pidTurn()) {
                 auto_drive.setDistance(12);
                 drive_gear_shift.set(false);
-                m_shooter.set(0.48);
-                m_shooter2.set(0.48);
+                shooter.setPowerLow();
                 m_intake.set(1);
                 intake_actuator.set(true);
                 auto_stage++;
@@ -426,8 +423,7 @@ public class Robot extends TimedRobot {
               // Fire
               if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
                 m_index.set(0);
-                m_shooter.set(0);
-                m_shooter2.set(0);
+                shooter.stop();
                 auto_stage++;
               }
               break;
@@ -443,8 +439,7 @@ public class Robot extends TimedRobot {
               auto_drive.stop();
               m_intake.set(0);
               m_index.set(0);
-              m_shooter.set(0);
-              m_shooter2.set(0);
+              shooter.stop();
               break;
             }
         }
@@ -452,8 +447,7 @@ public class Robot extends TimedRobot {
         else if(m_auto_selected.equals(kShootInPlace)) {
           switch(auto_stage){
             case 0:
-              m_shooter.set(shot_power);
-              m_shooter2.set(shot_power);
+              shooter.setPower(shot_power);
 
               if(Timer.getFPGATimestamp() - start_time > 3) {
                 time_stamp = Timer.getFPGATimestamp();
@@ -465,8 +459,7 @@ public class Robot extends TimedRobot {
               m_index.set(1);
 
               if(Timer.getFPGATimestamp() - time_stamp > 2) {
-                m_shooter.set(0);
-                m_shooter2.set(0);
+                shooter.stop();
                 m_index.set(0);
                 auto_drive.setDistance(8);
                 auto_stage++;
@@ -484,8 +477,7 @@ public class Robot extends TimedRobot {
               auto_drive.stop();
               m_index.set(0);
               m_intake.set(0);
-              m_shooter.set(0);
-              m_shooter2.set(0);
+              shooter.stop();
               break;
           }
         }
@@ -591,27 +583,23 @@ public class Robot extends TimedRobot {
     // Shooter (Deterine power from button)
     if(joy_co.getLeftTriggerAxis() > 0.8) {
       // Low Power
-      m_shooter.set(config.low_shot_power);
-      m_shooter2.set(config.low_shot_power);
+      shooter.setPowerLow();
       shooter_on = true;
       shooter_high = false;
     }
     else if(joy_co.getRightTriggerAxis() > 0.8) {
       // High Power
-      m_shooter.set(config.high_shot_power);
-      m_shooter2.set(config.high_shot_power);
+      shooter.setPowerHigh();
       shooter_on = true;
       shooter_high = true;
     }
     else if(joy_co.getAButton()) {
-      m_shooter.set(config.high_shot_far_power);
-      m_shooter2.set(config.high_shot_far_power);
+      shooter.setPowerAuto(limelight.getDistanceToHub());
       shooter_on = true;
       shooter_high = true;
     }
     else {
-      m_shooter.set(0);
-      m_shooter2.set(0);
+      shooter.stop();
       shooter_on = false;
     }
 
