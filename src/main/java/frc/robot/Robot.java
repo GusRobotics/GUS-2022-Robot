@@ -366,7 +366,7 @@ public class Robot extends TimedRobot {
 
             case 2:
               // Delay
-              if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
+              if(Timer.getFPGATimestamp() - time_stamp > 0.3) {
                 time_stamp = Timer.getFPGATimestamp();
                 m_index.set(0.5);
                 auto_stage++;
@@ -375,7 +375,7 @@ public class Robot extends TimedRobot {
 
             case 3:
               // Index to shoot
-              if(Timer.getFPGATimestamp() - time_stamp > 2) {
+              if(Timer.getFPGATimestamp() - time_stamp > 1.8) {
                 time_stamp = Timer.getFPGATimestamp();
                 auto_drive.setAngle(-110);
                 drive_gear_shift.set(true);
@@ -390,7 +390,7 @@ public class Robot extends TimedRobot {
             case 4:
               // Turn to third ball
               if(auto_drive.pidTurn()) {
-                auto_drive.setDistance(12);
+                auto_drive.setDistance(11.85);
                 drive_gear_shift.set(false);
                 m_shooter.set(0.48);
                 m_shooter2.set(0.48);
@@ -407,7 +407,14 @@ public class Robot extends TimedRobot {
                 auto_drive.stop();
                 auto_drive.setAngle(50);
                 drive_gear_shift.set(true);
+                m_index.set(0);
                 auto_stage++;
+              }
+              if(dist_sensor_1.getValue() < config.dist1_threshold) {
+                m_index.set(0.5);
+              }
+              else {
+                m_index.set(0);
               }
               break;
 
@@ -416,7 +423,7 @@ public class Robot extends TimedRobot {
               if(Timer.getFPGATimestamp() - time_stamp > 0.3 && auto_drive.pidTurn()) {
                 auto_drive.stop();
                 time_stamp = Timer.getFPGATimestamp();
-                m_index.set(0.5);
+                m_index.set(1);
                 drive_gear_shift.set(false);
                 auto_stage++;
               }
@@ -428,13 +435,18 @@ public class Robot extends TimedRobot {
                 m_index.set(0);
                 m_shooter.set(0);
                 m_shooter2.set(0);
+                m_intake.set(1);
+                auto_drive.setDistance(7.5);
                 auto_stage++;
               }
               break;
 
             case 8:
               // Go to fourth and fifth balls
-              auto_stage++;
+              if(auto_drive.pidStraight()) {
+                auto_drive.setDistance(-7.5);
+                auto_stage++;
+              }
               break;
 
             default:
@@ -648,6 +660,7 @@ public class Robot extends TimedRobot {
       index_on = true;
     }
     else if(index_on) {
+      // joy_co.setRumble()
       if(dist_sensor_1.getValue() >= config.dist1_threshold) {
         index_on = false;
       }
