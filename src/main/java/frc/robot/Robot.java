@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // General Resources
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CAN;
@@ -332,8 +333,36 @@ public class Robot extends TimedRobot {
         }
 
         else if(m_auto_selected.equals(kTwoBallHighAuto) || m_auto_selected.equals(kFourBallHighAuto)) {
-          if(m_auto_selected.equals(kTwoBallHighAuto) && auto_stage > 4) {
-            auto_stage = -1;
+          if(m_auto_selected.equals(kTwoBallHighAuto) && auto_stage > 3) {
+            if(auto_stage == 4) {
+              drive_gear_shift.set(true);
+              auto_drive.setAngle(-95);
+              auto_stage++;
+            }
+            else if(auto_stage == 5) {
+              if(auto_drive.pidTurn()) {
+                drive_gear_shift.set(false);
+                auto_drive.setDistance(5);
+                intake_actuator.set(true);
+                shooter.setPower(0.4);
+                m_intake.set(1);
+                auto_stage++;
+              }
+            }
+            else if(auto_stage == 6) {
+              if(auto_drive.pidStraight()) {
+                time_stamp = Timer.getFPGATimestamp();
+                m_index.set(1);
+              }
+            }
+            else if (auto_stage == 7) {
+              if(Timer.getFPGATimestamp() - time_stamp > 1) {
+                auto_stage++;
+              }
+            }
+            else {
+              auto_stage = -1;
+            }
           }
 
           switch(auto_stage) {
@@ -376,7 +405,7 @@ public class Robot extends TimedRobot {
               // Index to shoot
               if(Timer.getFPGATimestamp() - time_stamp > 1.8) {
                 time_stamp = Timer.getFPGATimestamp();
-                auto_drive.setAngle(-110);
+                auto_drive.setAngle(-112);
                 drive_gear_shift.set(true);
                 intake_actuator.set(false);
                 m_index.set(0);
@@ -402,7 +431,7 @@ public class Robot extends TimedRobot {
               if(auto_drive.pidStraight()) {
                 time_stamp = Timer.getFPGATimestamp();
                 auto_drive.stop();
-                auto_drive.setAngle(50);
+                auto_drive.setAngle(49);
                 drive_gear_shift.set(true);
                 m_index.set(0);
                 auto_stage++;
@@ -432,7 +461,7 @@ public class Robot extends TimedRobot {
                 m_index.set(0);
                 shooter.stop();
                 m_intake.set(1);
-                auto_drive.setDistance(7.5);
+                auto_drive.setDistance(8);
                 auto_stage++;
               }
               break;
@@ -440,7 +469,36 @@ public class Robot extends TimedRobot {
             case 8:
               // Go to fourth and fifth balls
               if(auto_drive.pidStraight()) {
-                auto_drive.setDistance(-7.5);
+                time_stamp = Timer.getFPGATimestamp();
+                auto_drive.stop();
+                auto_stage++;
+              }
+              break;
+
+            case 9:
+              // Wait for human load to get thrown in
+              if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
+                time_stamp = Timer.getFPGATimestamp();
+                auto_drive.setDistance(-8);
+                shooter.setPowerLow();
+                auto_stage++;
+              }
+              auto_drive.pidStraight();
+              break;
+
+            case 10:
+              // Drive up
+              if(auto_drive.pidStraight()) {
+                m_index.set(0.5);
+                auto_stage++;
+              }
+              break;
+
+            case 11:
+              // Fire
+              if(Timer.getFPGATimestamp() - time_stamp > 2) {
+                m_index.set(0);
+                shooter.stop();
                 auto_stage++;
               }
               break;
@@ -648,7 +706,8 @@ public class Robot extends TimedRobot {
       index_on = true;
     }
     else if(index_on) {
-      // joy_co.setRumble()
+      joy_climb.setRumble(RumbleType.kLeftRumble, 1);
+      joy_climb.setRumble(RumbleType.kRightRumble, 1);
       if(dist_sensor_1.getValue() >= config.dist1_threshold) {
         index_on = false;
       }
@@ -657,6 +716,8 @@ public class Robot extends TimedRobot {
       }
     }
     else {
+      joy_climb.setRumble(RumbleType.kLeftRumble, 0);
+      joy_climb.setRumble(RumbleType.kRightRumble, 0);
       m_index.set(0);
     }
     SmartDashboard.putBoolean("Index on", index_on);

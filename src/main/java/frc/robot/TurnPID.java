@@ -17,8 +17,8 @@ public class TurnPID {
     private double kD = 0;
     private double integral_range = 5;
     private double max_integral = 1;
-    private double allowed_error = 0.9;
-    private double correct_time = 0.1;
+    private double allowed_error = 0.7;
+    private double correct_time = 0.15;
 
     // Global variables
     private double last_time;
