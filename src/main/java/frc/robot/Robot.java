@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.CAN;
 
 // Solenoids
 import edu.wpi.first.wpilibj.Solenoid;
@@ -29,8 +28,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 // Cross the Road Resources
 import com.ctre.phoenix.sensors.PigeonIMU;
-// import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-// import com.ctre.phoenix.motorcontrol.ControlMode;
 
 // Camera Stuff
 import edu.wpi.first.cameraserver.CameraServer;
@@ -116,6 +113,8 @@ public class Robot extends TimedRobot {
   Solenoid drive_gear_shift = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.drive_channel);
   Solenoid intake_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.intake_channel);
   Solenoid climber_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.climber_channel);
+
+  Lights lights = new Lights();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -205,8 +204,18 @@ public class Robot extends TimedRobot {
     m_auto_selected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_auto_selected);
 
-    start_position = start_position_chooser.getSelected();
-    shot_power = shot_power_chooser.getSelected();
+    // Only use shot power parameter for shoot in place auto
+    if(m_auto_selected.equals(kShootInPlace)) {
+      shot_power = shot_power_chooser.getSelected();
+    }
+
+    // Auto set the start position for the four ball auto
+    if(m_auto_selected.equals(kFourBallHighAuto)) {
+      start_position = config.wallSide;
+    }
+    else {
+      start_position = start_position_chooser.getSelected();
+    }
 
     auto_drive = new PrecisionDrive(m_drive_left, m_drive_right, gyro);
     auto_stage = 0;
@@ -591,6 +600,8 @@ public class Robot extends TimedRobot {
     limelight.setTrackerCamera();
     limelight.ledOn(true);
 
+    lights.setOrange();
+
     SmartDashboard.putNumber("Target x", limelight.getTargetX());
     SmartDashboard.putNumber("Target y", limelight.getTargetY());
     SmartDashboard.putBoolean("Lined Up", limelight.isAlignedToShoot());
@@ -602,12 +613,20 @@ public class Robot extends TimedRobot {
    
     // Run Drive (Choose controller in use and run tank drive with thresolds)
     if(joy_base.getXButton() && !limelight.isAlignedToShoot()) {
-      // Auto align to targets
-      m_drive_left.set(-limelight.getTargetX() * kP);
-      m_drive_right.set(limelight.getTargetX() * kP);
+      if(limelight.hasTarget()) {
+        // When target is in sight, turn towards it
+        m_drive_left.set(-limelight.getTargetX() * kP);
+        m_drive_right.set(limelight.getTargetX() * kP);
+      }
+      else {
+        // When target is not in sight, turn until it is
+        m_drive_left.set(-1);
+        m_drive_right.set(1);
+      }
+      
     }
     else if(Math.abs(joy_base.getRightY()) > config.controller_threshold || Math.abs(joy_base.getLeftY()) > config.controller_threshold) {
-      // Drive controller
+      // Base Drive Controller
       if(Math.abs(joy_base.getLeftY()) > config.controller_threshold) {
         m_drive_left.set(joy_base.getLeftY());
       }
@@ -622,7 +641,7 @@ public class Robot extends TimedRobot {
       }
     }
     else if(Math.abs(joy_climb.getRightY()) > config.controller_threshold || Math.abs(joy_base.getLeftY()) > config.controller_threshold){
-      // Climb controller
+      // Climb Controller
       if(Math.abs(joy_climb.getLeftY()) > config.controller_threshold) {
         m_drive_left.set(joy_climb.getLeftY());
       }
@@ -669,24 +688,28 @@ public class Robot extends TimedRobot {
     }
    
     // Shooter (Deterine power from button)
-    if(joy_co.getLeftTriggerAxis() > 0.8) {
+    if(joy_co.getLeftTriggerAxis() > 0.8) { 
       // Low Power
       shooter.setPowerLow();
       shooter_on = true;
       shooter_high = false;
     }
     else if(joy_co.getRightTriggerAxis() > 0.8) {
-      // High Power
-      shooter.setPowerHigh();
+      // High power auto
+      if(limelight.hasTarget()) {
+        shooter.setPowerAuto(limelight.getDistanceToHub());
+      }
+      else {
+        shooter.setPowerHigh();
+      }
       shooter_on = true;
       shooter_high = true;
     }
     else if(joy_co.getAButton()) {
-      if(limelight.hasTarget()) {
-        shooter.setPowerAuto(limelight.getDistanceToHub());
-        shooter_on = true;
-        shooter_high = true;
-      }
+      // Static high power in case limelight stalls
+      shooter.setPowerHigh();
+      shooter_on = true;
+      shooter_high = true;
     }
     else {
       shooter.stop();
@@ -762,7 +785,7 @@ public class Robot extends TimedRobot {
       m_climber_left.set(0);
     }
 
-    // Pneumatics
+    // Climb Actuator
     if (joy_climb.getBButton()) {
       climber_actuator.set(true);
     }
@@ -778,6 +801,27 @@ public class Robot extends TimedRobot {
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
+    // Only show shot power when relevant
+
+    lights.setOrange();
+
+    /**
+    if(m_chooser.getSelected().equals(kShootInPlace)) {
+      SmartDashboard.putData("Start Position", start_position_chooser);
+    }
+    else {
+      SmartDashboard.delete("Shot Power");
+    }
+
+    // Only show position when multiple options
+    if(m_chooser.getSelected().equals(kFourBallHighAuto)) {
+      SmartDashboard.delete("Start Position");
+    }
+    else {
+      SmartDashboard.putData("Start Position", start_position_chooser);
+    }
+    */
+
     SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
 
     limelight.setTrackerCamera();
@@ -787,7 +831,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Distance to Hub", limelight.getDistanceToHub());
 
     if(limelight.hasTarget()) {
-      shooter.setPowerAuto(limelight.getDistanceToHub());
+      // shooter.setPowerAuto(limelight.getDistanceToHub());
     }
 
   }
