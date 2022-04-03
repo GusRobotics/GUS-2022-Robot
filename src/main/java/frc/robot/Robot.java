@@ -71,6 +71,7 @@ public class Robot extends TimedRobot {
 
    // General time stamp in global scope because of iterative stuff
    private double time_stamp = 0;
+   private double time_remaining = 210;
 
   // INITIALIZE ELECTRONICS
   // Controller
@@ -600,16 +601,29 @@ public class Robot extends TimedRobot {
     limelight.setTrackerCamera();
     limelight.ledOn(true);
 
-    lights.setOrange();
-
     SmartDashboard.putNumber("Target x", limelight.getTargetX());
     SmartDashboard.putNumber("Target y", limelight.getTargetY());
     SmartDashboard.putBoolean("Lined Up", limelight.isAlignedToShoot());
     SmartDashboard.putNumber("Distance to Hub", limelight.getDistanceToHub());
 
     double kP = 0.04;
+
+    time_remaining = 135 - (Timer.getFPGATimestamp() - start_time);
     
-    SmartDashboard.putNumber("Time Remaining", 135 - (Timer.getFPGATimestamp() - start_time));
+    SmartDashboard.putNumber("Time Remaining", time_remaining);
+
+    if(limelight.isAlignedToShoot() && dist_sensor_1.getValue() < config.dist1_threshold) {
+      lights.setBlink(config.green);
+    }
+    else if(time_remaining < 30 && time_remaining > 26) {
+      lights.setBlink(config.red);
+    }
+    else if(dist_sensor_1.getValue() < config.dist1_threshold) {
+      lights.setColor(config.blue);
+    }
+    else {
+      lights.setColor(config.orange);
+    }
    
     // Run Drive (Choose controller in use and run tank drive with thresolds)
     if(joy_base.getXButton() && !limelight.isAlignedToShoot()) {
@@ -803,7 +817,7 @@ public class Robot extends TimedRobot {
   public void disabledPeriodic() {
     // Only show shot power when relevant
 
-    lights.setOrange();
+    lights.setColor(config.orange);
 
     /**
     if(m_chooser.getSelected().equals(kShootInPlace)) {
