@@ -1,10 +1,12 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class Lights {
     private Spark lightstrip;
-    boolean blink = false;
+    private boolean on = true;
+    private double time_stamp = 0;
 
     public Lights() {
         lightstrip = new Spark(config.led_port);
@@ -14,32 +16,22 @@ public class Lights {
         lightstrip.set(color_val);
     }
 
-    public void setOrange() {
-        lightstrip.set(0.65);
+    public void setBlink(double color_val) {
+        if(Timer.getFPGATimestamp() - time_stamp > 0.25) {
+            if(on) {
+                this.setOff();
+            }
+            else {
+                this.setColor(color_val);
+            }
+        }
+        else {
+            time_stamp = Timer.getFPGATimestamp();
+            on = !on;
+        } 
     }
 
-    public void setRed() {
-        lightstrip.set(0.61);
+    public void setOff() {
+        lightstrip.set(config.black);
     }
-
-    public void setGreen() {
-        lightstrip.set(0.73);
-    }
-
-    public void setBlue() {
-        lightstrip.set(config.blue);
-    }
-
-    public void setBlack() {
-        lightstrip.set(0.99);
-    }
-
-    public void setBlink() {
-        blink = true;
-    }
-
-    public void setSolid() {
-        blink = false;
-    }
-
 }

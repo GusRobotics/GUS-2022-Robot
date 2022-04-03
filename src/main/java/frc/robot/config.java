@@ -84,6 +84,10 @@ public class config {
     // High gear is false
 
     // Colors
-    public static final double orange = 0.67;
+    public static final double red = 0.61;
+    public static final double orange = 0.65;
+    public static final double yellow = 0.69;
+    public static final double green = 0.73;
     public static final double blue = 0.87;
+    public static final double black = 0.99;
 }
