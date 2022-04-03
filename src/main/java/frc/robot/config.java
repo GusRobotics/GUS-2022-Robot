@@ -19,6 +19,9 @@ public class config {
     public static final int pcm_ID = 18;
     public static final int pigeon_ID = 19;
 
+    // PWM Ports
+    public static final int led_port = 0;
+
     // Solenoid channels
     public static final int drive_channel = 0;
     public static final int intake_channel = 1;
@@ -79,4 +82,8 @@ public class config {
     public static final double controller_threshold = 0.10;
 
     // High gear is false
+
+    // Colors
+    public static final double orange = 0.67;
+    public static final double blue = 0.87;
 }
