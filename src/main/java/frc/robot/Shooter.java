@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.revrobotics.CANSparkMax;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Shooter {
@@ -35,8 +36,9 @@ public class Shooter {
      */
     public void setPowerAuto(double distance) {
         // Incorporate some sort of formula here, tbd
-        this.setPower(config.high_shot_power);
-        SmartDashboard.putString("Warning", "Incomplete variable distance tuning");
+        double p = 0.00131 * distance * distance - 0.00262 * distance + 0.635;
+        this.setPower(p);
+        SmartDashboard.putNumber("Power", p);
     }
 
     public void stop() {

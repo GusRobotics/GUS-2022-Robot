@@ -18,12 +18,12 @@ public class Limelight {
     }
 
     public double getDistanceToHub() {
-        double angleToTarget = (config.camera_angle + this.getTargetY()) * (Math.PI / 180);
-        return (config.high_goal_tape_height - config.camera_height) / (Math.tan(angleToTarget));
+        double angleToTarget = (config.camera_angle * 1.2 + this.getTargetY()) * (Math.PI / 180);
+        return (config.high_goal_tape_height - config.camera_height) / (Math.tan(angleToTarget)) - 1 - 19.5/12;
     }
 
     public boolean isAlignedToShoot() {
-        return (this.getTargetX() < config.shot_horizontal_angle_range);
+        return (Math.abs(this.getTargetX()) < config.shot_horizontal_angle_range);
     }
 
     public void setTrackerCamera() {

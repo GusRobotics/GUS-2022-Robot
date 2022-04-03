@@ -44,7 +44,16 @@ public class config {
 
     // Shot power
     public static final double low_shot_power = 0.435;
-    public static final double high_shot_power = 0.70;
+    // 7ft  - 0.68
+    // 8ft  - 0.70
+    // 9ft  - 0.72
+    // 10ft - 0.735
+    // 11ft - 0.76
+    // 12ft - 0.795
+    // 13ft - 0.82
+    // 14ft - 0.85
+
+    public static final double high_shot_power = 0.7;
     public static final double high_shot_far_power = 0.9;
 
     // Field constants (in feet)
@@ -52,8 +61,8 @@ public class config {
     public static final double practice_tape_height = 72.5/12.0;
 
     // Robot physical constants
-    public static final double camera_angle = 18;
-    public static final double camera_height = 31/12.0;
+    public static final double camera_angle = 18.5; // 18.5?
+    public static final double camera_height = 30.5/12.0;
 
     // Lining up to shoot
     public static final double shot_horizontal_angle_range = 2;
