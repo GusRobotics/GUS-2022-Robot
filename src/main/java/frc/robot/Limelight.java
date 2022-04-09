@@ -23,7 +23,10 @@ public class Limelight {
     }
 
     public boolean isAlignedToShoot() {
-        return (Math.abs(this.getTargetX()) < config.shot_horizontal_angle_range);
+        if(this.hasTarget()) {
+            return (Math.abs(this.getTargetX()) < config.shot_horizontal_angle_range);
+        }
+        return false;
     }
 
     public void setTrackerCamera() {
