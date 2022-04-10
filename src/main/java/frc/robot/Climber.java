@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMax;
 public class Climber {
     private final CANSparkMax m_hook_left;
     private final CANSparkMax m_hook_right;
+    private String status = "";
 
     public Climber(CANSparkMax hook_left, CANSparkMax hook_right) {
         m_hook_left = hook_left;
@@ -17,14 +18,19 @@ public class Climber {
      * @return boolean status completion
      */
     public boolean fullHookRaise() {
-        if(m_hook_left.getEncoder().getPosition() < config.hooks_high) {
+        if(status != "high") {
+            m_hook_left.getEncoder().setPosition(0);
+            m_hook_right.getEncoder().setPosition(0);
+            status = "high";
+        }
+        if(m_hook_left.getEncoder().getPosition() < config.left_hook_high) {
             // CHECK DIRECTION
-            m_hook_left.set(0);
+            m_hook_left.set(0.2);
             return false;
         }
-        if(m_hook_right.getEncoder().getPosition() < config.hooks_high) {
+        if(m_hook_right.getEncoder().getPosition() < config.right_hook_high) {
             // CHECK DIRECTION
-            m_hook_right.set(0);
+            m_hook_right.set(0.2);
             return false;
         }
         return true;

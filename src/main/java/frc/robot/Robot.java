@@ -19,9 +19,6 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Compressor;
 
-// Data Display Tools
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 // Rev Resources
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -29,12 +26,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 // Cross the Road Resources
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-// Camera Stuff
-import edu.wpi.first.cameraserver.CameraServer;
-
 // Limelight
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 
@@ -100,6 +92,9 @@ public class Robot extends TimedRobot {
   PrecisionDrive auto_drive;
   int auto_stage;
   double start_time;
+
+  // Create climber
+  Climber climber = new Climber();
 
   // Create shooter
   Shooter shooter = new Shooter(m_shooter, m_shooter2);
@@ -187,6 +182,8 @@ public class Robot extends TimedRobot {
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
+
+    SmartDashboard.putNumber("Constant Power", config.high_shot_power);
   }
 
   /**
@@ -197,7 +194,25 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+
+    if(limelight.isAlignedToShoot() && dist_sensor_1.getValue() > config.dist1_threshold) {
+      lights.setColor(config.green);
+    }
+    else if(time_remaining < 30 && time_remaining > 26) {
+      lights.setColor(config.red);
+    }
+    else if(dist_sensor_1.getValue() > config.dist1_threshold) {
+      lights.setColor(config.blue);
+    }
+    else {
+      lights.setColor(config.red);
+    }
+
+    SmartDashboard.putNumber("Left climb", m_climber_left.getEncoder().getPosition());
+    SmartDashboard.putNumber("Right climb", m_climber_right.getEncoder().getPosition());
+
+  }
 
   /** Run code without user input. Specify autonomous routine with SendableChoosers on Shuffleboard*/
   @Override
@@ -233,7 +248,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Auto Stage", auto_stage);
     SmartDashboard.putNumber("Auto Time", Timer.getFPGATimestamp() - start_time);
 
-    if(Timer.getFPGATimestamp() - start_time <= 15) {
+    if(Timer.getFPGATimestamp() - start_time <= 30) {
         if(m_auto_selected.equals(kPidTuneAuto)) {
           SmartDashboard.putString("Mode", "Test");
           // Put custom auto code here
@@ -353,7 +368,7 @@ public class Robot extends TimedRobot {
               if(auto_drive.pidTurn()) {
                 auto_drive.stop();
                 drive_gear_shift.set(false);
-                auto_drive.setDistance(3.5);
+                auto_drive.setDistance(2.5);
                 intake_actuator.set(true);
                 m_intake.set(1);
                 auto_stage++;
@@ -396,10 +411,10 @@ public class Robot extends TimedRobot {
                 intake_actuator.set(true);
                 m_intake.set(1);
 
-                shooter.setPower(0.67);
+                shooter.setPower(0.5);
 
                 if(start_position.equals(config.hangerSide)) {
-                  auto_drive.setDistance(4);
+                  auto_drive.setDistance(5);
                 }
                 else {
                   auto_drive.setDistance(3);
@@ -444,7 +459,7 @@ public class Robot extends TimedRobot {
                 if(auto_drive.pidTurn()) {
                   auto_drive.setDistance(12.35);
                   drive_gear_shift.set(false);
-                  shooter.setPower(0.745);
+                  shooter.setPower(0.83);
                   m_intake.set(1);
                   intake_actuator.set(true);
                   auto_stage++;
@@ -461,7 +476,7 @@ public class Robot extends TimedRobot {
                   auto_stage++;
                 }
                 if(dist_sensor_1.getValue() < config.dist1_threshold) {
-                  m_index.set(0.5);
+                  m_index.set(0.6);
                 }
                 else {
                   m_index.set(0);
@@ -473,19 +488,25 @@ public class Robot extends TimedRobot {
                 if(Timer.getFPGATimestamp() - time_stamp > 0.5 && auto_drive.pidTurn()) {
                   auto_drive.stop();
                   time_stamp = Timer.getFPGATimestamp();
-                  m_index.set(1);
                   drive_gear_shift.set(false);
                   auto_stage++;
+                }
+                if(dist_sensor_1.getValue() < config.dist1_threshold) {
+                  m_index.set(0.5);
+                }
+                else {
+                  m_index.set(0);
                 }
                 break;
 
               case 7:
                 // Fire
-                if(Timer.getFPGATimestamp() - time_stamp > 1) {
+                m_index.set(1);
+                if(Timer.getFPGATimestamp() - time_stamp > 1.5) {
                   m_index.set(0);
                   shooter.stop();
                   m_intake.set(1);
-                  auto_drive.setDistance(8.5);
+                  auto_drive.setDistance(8.35);
                   auto_stage++;
                 }
                 break;
@@ -505,8 +526,8 @@ public class Robot extends TimedRobot {
                 auto_drive.pidStraight();
                 if(Timer.getFPGATimestamp() - time_stamp > 0.5) {
                   time_stamp = Timer.getFPGATimestamp();
-                  auto_drive.setDistance(-8.5);
-                  shooter.setPower(0.67);
+                  auto_drive.setDistance(-8.35);
+                  shooter.setPower(0.83);
                   auto_stage++;
                 }
                 break;
@@ -515,7 +536,6 @@ public class Robot extends TimedRobot {
                 // Drive up
                 if(auto_drive.pidStraight()) {
                   time_stamp = Timer.getFPGATimestamp();
-                  auto_drive.stop();
                   m_index.set(0.5);
                   auto_stage++;
                 }
@@ -611,19 +631,6 @@ public class Robot extends TimedRobot {
     time_remaining = 135 - (Timer.getFPGATimestamp() - start_time);
     
     SmartDashboard.putNumber("Time Remaining", time_remaining);
-
-    if(limelight.isAlignedToShoot() && dist_sensor_1.getValue() < config.dist1_threshold) {
-      lights.setBlink(config.green);
-    }
-    else if(time_remaining < 30 && time_remaining > 26) {
-      lights.setBlink(config.red);
-    }
-    else if(dist_sensor_1.getValue() < config.dist1_threshold) {
-      lights.setColor(config.blue);
-    }
-    else {
-      lights.setColor(config.orange);
-    }
    
     // Run Drive (Choose controller in use and run tank drive with thresolds)
     if(joy_base.getXButton() && !limelight.isAlignedToShoot()) {
@@ -721,7 +728,7 @@ public class Robot extends TimedRobot {
     }
     else if(joy_co.getAButton()) {
       // Static high power in case limelight stalls
-      shooter.setPowerHigh();
+      shooter.setPower(SmartDashboard.getNumber("Constant Power", config.high_shot_power));
       shooter_on = true;
       shooter_high = true;
     }
@@ -781,6 +788,9 @@ public class Robot extends TimedRobot {
     if(joy_climb.getLeftBumper()) {
       m_climber_right.set(1);
     }
+    else if(joy_climb.getXButton()) {
+      
+    }
     else if(joy_climb.getLeftTriggerAxis() > 0.8) {
       m_climber_right.set(-1);
     }
@@ -806,6 +816,7 @@ public class Robot extends TimedRobot {
     else {
       climber_actuator.set(false);
     }
+  
   }
 
   /** This function is called once when the robot is disabled. */
@@ -818,23 +829,6 @@ public class Robot extends TimedRobot {
     // Only show shot power when relevant
 
     lights.setColor(config.orange);
-
-    /**
-    if(m_chooser.getSelected().equals(kShootInPlace)) {
-      SmartDashboard.putData("Start Position", start_position_chooser);
-    }
-    else {
-      SmartDashboard.delete("Shot Power");
-    }
-
-    // Only show position when multiple options
-    if(m_chooser.getSelected().equals(kFourBallHighAuto)) {
-      SmartDashboard.delete("Start Position");
-    }
-    else {
-      SmartDashboard.putData("Start Position", start_position_chooser);
-    }
-    */
 
     SmartDashboard.putNumber("Distance Sensor 1 Value", dist_sensor_1.getValue());
 

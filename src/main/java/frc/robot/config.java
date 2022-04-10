@@ -43,7 +43,7 @@ public class config {
 
     // Index power
     public static final double index_power = 0.65;
-    public static final double high_shot_index_power = 0.8;
+    public static final double high_shot_index_power = 0.7;
 
     // Shot power
     public static final double low_shot_power = 0.435;
@@ -78,6 +78,9 @@ public class config {
     public static final double hooks_low = 5;
     public static final double hooks_medium = 10;
     public static final double hooks_high = 15;
+
+    public static final double left_hook_high = 200;
+    public static final double right_hook_high = 200;
 
     public static final double controller_threshold = 0.10;
 

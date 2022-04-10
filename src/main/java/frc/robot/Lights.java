@@ -20,11 +20,9 @@ public class Lights {
         if(Timer.getFPGATimestamp() - time_stamp > 0.25) {
             if(on) {
                 this.setOff();
-                this.on = false;
             }
             else {
                 this.setColor(color_val);
-                this.on = true;
             }
         }
         else {
