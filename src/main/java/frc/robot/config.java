@@ -43,10 +43,10 @@ public class config {
 
     // Index power
     public static final double index_power = 0.65;
-    public static final double high_shot_index_power = 0.7;
+    public static final double high_shot_index_power = 0.25;
 
     // Shot power
-    public static final double low_shot_power = 0.435;
+    public static final double low_shot_power = 0.55;
     // 7ft  - 0.68
     // 8ft  - 0.70
     // 9ft  - 0.72

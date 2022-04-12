@@ -36,7 +36,8 @@ public class Shooter {
      */
     public void setPowerAuto(double distance) {
         // Incorporate some sort of formula here, tbd
-        double p = 0.00131 * distance * distance - 0.00262 * distance + 0.635;
+        // double p = 0.00131 * distance * distance - 0.00262 * distance + 0.635;
+        double p = distance * 0.0182 + 0.537;
         this.setPower(p);
         SmartDashboard.putNumber("Power", p);
     }

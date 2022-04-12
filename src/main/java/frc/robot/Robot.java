@@ -94,7 +94,7 @@ public class Robot extends TimedRobot {
   double start_time;
 
   // Create climber
-  Climber climber = new Climber();
+  Climber climber = new Climber(m_climber_left, m_climber_right);
 
   // Create shooter
   Shooter shooter = new Shooter(m_shooter, m_shooter2);
@@ -361,40 +361,45 @@ public class Robot extends TimedRobot {
           if(m_auto_selected.equals(kTwoBallHighAuto) && auto_stage > 3) {
             if(auto_stage == 4) {
               drive_gear_shift.set(true);
-              auto_drive.setAngle(-90);
+              auto_drive.setAngle(-103);
               auto_stage++;
             }
             else if(auto_stage == 5) {
+              // Turn to opposing ball
               if(auto_drive.pidTurn()) {
                 auto_drive.stop();
                 drive_gear_shift.set(false);
-                auto_drive.setDistance(2.5);
+                auto_drive.setDistance(3.5);
                 intake_actuator.set(true);
                 m_intake.set(1);
                 auto_stage++;
               }
             }
             else if(auto_stage == 6) {
+              // Intake opposing ball
               if(auto_drive.pidStraight()) {
                 intake_actuator.set(false);
-                shooter.setPower(0.5);
+                shooter.setPower(0.45);
                 time_stamp = Timer.getFPGATimestamp();
                 auto_stage++;
               }
             }
             else if (auto_stage == 7) {
+              // Wait
               if(Timer.getFPGATimestamp() - time_stamp > 1) {
-                auto_drive.setAngle(-48);
+                auto_drive.setAngle(-53);
                 auto_stage++;
               }
             }
             else if(auto_stage == 8) {
+              // Turn towards hangar
               if(auto_drive.pidTurn()) {
-                auto_drive.setDistance(-10);
+                auto_drive.setDistance(-5);
                 auto_stage++;
               }
             }
             else if(auto_stage == 9) {
+              // Drive towards hangar
               if(auto_drive.pidStraight()) {
                 auto_drive.stop();
                 m_index.set(1);
@@ -411,7 +416,7 @@ public class Robot extends TimedRobot {
                 intake_actuator.set(true);
                 m_intake.set(1);
 
-                shooter.setPower(0.5);
+                shooter.setPower(0.703);
 
                 if(start_position.equals(config.hangerSide)) {
                   auto_drive.setDistance(5);
@@ -434,22 +439,22 @@ public class Robot extends TimedRobot {
 
               case 2:
                 // Delay
-                if(Timer.getFPGATimestamp() - time_stamp > 0.3) {
+                if(Timer.getFPGATimestamp() - time_stamp > 0.4) {
                   time_stamp = Timer.getFPGATimestamp();
-                  m_index.set(0.5);
+                  m_index.set(0.4);
                   auto_stage++;
                 }
                 break;
 
               case 3:
                 // Index to shoot
-                if(Timer.getFPGATimestamp() - time_stamp > 1.8) {
+                if(Timer.getFPGATimestamp() - time_stamp > 1.4) {
                   time_stamp = Timer.getFPGATimestamp();
-                  auto_drive.setAngle(-105);
                   drive_gear_shift.set(true);
                   intake_actuator.set(false);
                   m_index.set(0);
                   shooter.stop();
+                  auto_drive.setAngle(-105);
                   auto_stage++;
                 }
                 break;
@@ -463,6 +468,12 @@ public class Robot extends TimedRobot {
                   m_intake.set(1);
                   intake_actuator.set(true);
                   auto_stage++;
+                }
+                if(dist_sensor_1.getValue() < config.dist1_threshold) {
+                  m_index.set(0.6);
+                }
+                else {
+                  m_index.set(0);
                 }
                 break;
 
@@ -626,7 +637,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Lined Up", limelight.isAlignedToShoot());
     SmartDashboard.putNumber("Distance to Hub", limelight.getDistanceToHub());
 
-    double kP = 0.04;
+    double kP = 0.041;
 
     time_remaining = 135 - (Timer.getFPGATimestamp() - start_time);
     
