@@ -15,9 +15,8 @@ public class Climber {
 
     /**
      * Iterative model for full hook raise when reaching for bar
-     * @return boolean status completion
      */
-    public boolean fullHookRaise() {
+    public void fullHookRaise() {
         if(status != "high") {
             m_hook_left.getEncoder().setPosition(0);
             m_hook_right.getEncoder().setPosition(0);
@@ -26,14 +25,17 @@ public class Climber {
         if(m_hook_left.getEncoder().getPosition() < config.left_hook_high) {
             // CHECK DIRECTION
             m_hook_left.set(0.2);
-            return false;
+        }
+        else {
+            m_hook_left.set(0);
         }
         if(m_hook_right.getEncoder().getPosition() < config.right_hook_high) {
             // CHECK DIRECTION
             m_hook_right.set(0.2);
-            return false;
         }
-        return true;
+        else {
+            m_hook_right.set(0);
+        }
     }
 
     /**
@@ -67,5 +69,7 @@ public class Climber {
         return true;
     }
 
-    // Implement five operations - full hook raise, full hook retract, partial hook raise, pneumatic extend, pneumatic retract
+    public void setStatus(String new_status) {
+        status = new_status;
+    }
 }

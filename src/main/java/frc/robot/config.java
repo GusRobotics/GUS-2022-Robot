@@ -43,18 +43,10 @@ public class config {
 
     // Index power
     public static final double index_power = 0.65;
-    public static final double high_shot_index_power = 0.25;
+    public static final double high_shot_index_power = 0.4;
 
     // Shot power
-    public static final double low_shot_power = 0.55;
-    // 7ft  - 0.68
-    // 8ft  - 0.70
-    // 9ft  - 0.72
-    // 10ft - 0.735
-    // 11ft - 0.76
-    // 12ft - 0.795
-    // 13ft - 0.82
-    // 14ft - 0.85
+    public static final double low_shot_power = 0.45;
 
     public static final double high_shot_power = 0.7;
     public static final double high_shot_far_power = 0.9;
@@ -87,6 +79,7 @@ public class config {
     // High gear is false
 
     // Colors
+    public static final double pink = 0.57;
     public static final double red = 0.61;
     public static final double orange = 0.66;
     public static final double yellow = 0.69;
