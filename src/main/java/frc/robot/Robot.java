@@ -100,6 +100,7 @@ public class Robot extends TimedRobot {
   PigeonIMU gyro = new PigeonIMU(config.pigeon_ID);
   AnalogInput dist_sensor_1 = new AnalogInput(config.index_dist_sensor_channel);
   Limelight limelight = new Limelight(NetworkTableInstance.getDefault().getTable("limelight"));
+  ColorSensor m_colorSensor = new ColorSensor();
 
   // Initialize pneumatic system
   Compressor compressor = new Compressor(config.pcm_ID, PneumaticsModuleType.CTREPCM);
@@ -108,6 +109,7 @@ public class Robot extends TimedRobot {
   Solenoid climber_actuator = new Solenoid(config.pcm_ID, PneumaticsModuleType.CTREPCM, config.climber_channel);
 
   Lights lights = new Lights();
+
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -211,7 +213,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Left climb", m_climber_left.getEncoder().getPosition());
     SmartDashboard.putNumber("Right climb", m_climber_right.getEncoder().getPosition());
-
+    
+    m_colorSensor.printVals();
   }
 
   /** Run code without user input. Specify autonomous routine with SendableChoosers on Shuffleboard*/
@@ -726,7 +729,10 @@ public class Robot extends TimedRobot {
       m_intake.set(1);
     }
     else if(joy_co.getBackButton()) {
-      m_intake.set(-1);
+      m_intake.set(-1); 
+    }
+    else if(joy_base.getLeftTriggerAxis() > 0.8) {
+      m_intake.set(1);
     }
     else {
       m_intake.set(0);
