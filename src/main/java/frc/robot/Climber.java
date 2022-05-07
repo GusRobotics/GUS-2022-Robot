@@ -2,15 +2,29 @@ package frc.robot;
 
 // Rev Resources
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class Climber {
-    private final CANSparkMax m_hook_left;
-    private final CANSparkMax m_hook_right;
+    private final CANSparkMax m_climber_left;
+    private final CANSparkMax m_climber_right;
     private String status = "";
 
-    public Climber(CANSparkMax hook_left, CANSparkMax hook_right) {
-        m_hook_left = hook_left;
-        m_hook_right = hook_right;
+    public Climber() {
+        // Create Motors
+        m_climber_left = new CANSparkMax(config.climber_left_ID, MotorType.kBrushless);
+        m_climber_right = new CANSparkMax(config.climber_right_ID, MotorType.kBrushless);
+        m_climber_left.restoreFactoryDefaults();
+        m_climber_right.restoreFactoryDefaults();
+        m_climber_left.setSmartCurrentLimit(config.climber_current_limit);
+        m_climber_right.setSmartCurrentLimit(config.climber_current_limit);
+        m_climber_left.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        m_climber_right.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        m_climber_left.getEncoder().setPosition(0);
+        m_climber_right.getEncoder().setPosition(0);
+    }
+
+    public void leftClimberRaise() {
+
     }
 
     /**
@@ -18,16 +32,16 @@ public class Climber {
      */
     public void fullHookRaise() {
         if(status != "high") {
-            m_hook_left.getEncoder().setPosition(0);
+            m_climber_left.getEncoder().setPosition(0);
             m_hook_right.getEncoder().setPosition(0);
             status = "high";
         }
-        if(m_hook_left.getEncoder().getPosition() < config.left_hook_high) {
+        if(m_climber_left.getEncoder().getPosition() < config.left_hook_high) {
             // CHECK DIRECTION
-            m_hook_left.set(0.2);
+            m_climber_left.set(0.2);
         }
         else {
-            m_hook_left.set(0);
+            m_climber_left.set(0);
         }
         if(m_hook_right.getEncoder().getPosition() < config.right_hook_high) {
             // CHECK DIRECTION
@@ -43,14 +57,14 @@ public class Climber {
      * @return boolean status completion
      */
     public boolean partialHookRaise() {
-        if(m_hook_left.getEncoder().getPosition() < config.hooks_medium) {
+        if(m_climber_left.getEncoder().getPosition() < config.hooks_medium) {
             // CHECK DIRECTION
-            m_hook_left.set(0);
+            m_climber_left.set(0);
             return false;
         }
-        if(m_hook_left.getEncoder().getPosition() < config.hooks_medium) {
+        if(m_climber_left.getEncoder().getPosition() < config.hooks_medium) {
             // CHECK DIRECTION
-            m_hook_left.set(0);
+            m_climber_left.set(0);
             return false;
         }
         return true;
@@ -67,9 +81,5 @@ public class Climber {
             return false;
         }
         return true;
-    }
-
-    public void setStatus(String new_status) {
-        status = new_status;
     }
 }

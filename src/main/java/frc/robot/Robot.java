@@ -78,12 +78,8 @@ public class Robot extends TimedRobot {
   CANSparkMax m_drive_right = new CANSparkMax(config.drive_right1_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right2 = new CANSparkMax(config.drive_right2_ID, MotorType.kBrushless);
   CANSparkMax m_drive_right3 = new CANSparkMax(config.drive_right3_ID, MotorType.kBrushless);
-  CANSparkMax m_shooter = new CANSparkMax(config.shooter1_ID, MotorType.kBrushless);
-  CANSparkMax m_shooter2 = new CANSparkMax(config.shooter2_ID, MotorType.kBrushless);
   CANSparkMax m_index = new CANSparkMax(config.index_ID, MotorType.kBrushless);
   CANSparkMax m_intake = new CANSparkMax(config.intake_ID, MotorType.kBrushless);
-  CANSparkMax m_climber_left = new CANSparkMax(config.climber_left_ID, MotorType.kBrushless);
-  CANSparkMax m_climber_right = new CANSparkMax(config.climber_right_ID, MotorType.kBrushless);
 
   // Create drivetrain
   PrecisionDrive auto_drive;
@@ -91,10 +87,10 @@ public class Robot extends TimedRobot {
   double start_time;
 
   // Create climber
-  Climber climber = new Climber(m_climber_left, m_climber_right);
+  Climber climber = new Climber();
 
   // Create shooter
-  Shooter shooter = new Shooter(m_shooter, m_shooter2);
+  Shooter shooter = new Shooter();
 
   // Initialize all sensors 
   PigeonIMU gyro = new PigeonIMU(config.pigeon_ID);
@@ -144,11 +140,8 @@ public class Robot extends TimedRobot {
     m_drive_right.restoreFactoryDefaults();
     m_drive_right2.restoreFactoryDefaults();
     m_drive_right3.restoreFactoryDefaults();
-    m_shooter.restoreFactoryDefaults();
-    m_shooter2.restoreFactoryDefaults();
     m_index.restoreFactoryDefaults();
-    m_climber_left.restoreFactoryDefaults();
-    m_climber_right.restoreFactoryDefaults();
+
 
     // Invert backwards motors
     m_drive_right.setInverted(true);
@@ -162,26 +155,18 @@ public class Robot extends TimedRobot {
     m_drive_right.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_right2.setSmartCurrentLimit(config.drive_current_limit);
     m_drive_right3.setSmartCurrentLimit(config.drive_current_limit);
-    m_shooter.setSmartCurrentLimit(config.shooter_current_limit);
-    m_shooter2.setSmartCurrentLimit(config.shooter_current_limit);
     m_intake.setSmartCurrentLimit(config.intake_current_limit);
     m_index.setSmartCurrentLimit(config.index_current_limit);
-    m_climber_left.setSmartCurrentLimit(config.climber_current_limit);
-    m_climber_right.setSmartCurrentLimit(config.climber_current_limit);
+
 
     // Set index and intake to brake
     m_index.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    m_climber_left.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    m_climber_right.setIdleMode(CANSparkMax.IdleMode.kBrake);
+
 
     // Start the compressor- this is the only thing needed for the compressor
     compressor.enableDigital();
 
     SmartDashboard.putNumber("Constant Power", config.high_shot_power);
-
-    // Reset climb encoders
-    m_climber_left.getEncoder().setPosition(0);
-    m_climber_right.getEncoder().setPosition(0);
   }
 
   /**
@@ -198,9 +183,6 @@ public class Robot extends TimedRobot {
     if(limelight.isAlignedToShoot() && dist_sensor_1.getValue() > config.dist1_threshold) {
       lights.setColor(config.green);
     }
-    else if(m_climber_left.getEncoder().getPosition() > 245 && m_climber_right.getEncoder().getPosition() > 280) {
-      lights.setColor(config.green);
-    }
     else if(time_remaining < 40) {
       lights.setColor(config.pink);
     }
@@ -210,9 +192,6 @@ public class Robot extends TimedRobot {
     else {
       lights.setColor(config.red);
     }
-
-    SmartDashboard.putNumber("Left climb", m_climber_left.getEncoder().getPosition());
-    SmartDashboard.putNumber("Right climb", m_climber_right.getEncoder().getPosition());
     
     m_colorSensor.printVals();
   }
@@ -849,8 +828,8 @@ public class Robot extends TimedRobot {
         m_climber_left.set(-0.96);
       }
       else {
-      m_climber_left.set(0);
-    }
+        m_climber_left.set(0);
+      }
     }
 
     // Climb Actuator

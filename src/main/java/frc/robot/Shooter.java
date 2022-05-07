@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,9 +12,16 @@ public class Shooter {
     private double time_stamp;
     private double prev_rps;
 
-    public Shooter(CANSparkMax shooter_1, CANSparkMax shooter_2) {
-        this.m_shooter_1 = shooter_1;
-        this.m_shooter_2 = shooter_2;
+    /**
+     * Initialize both motors for the shooter
+     */
+    public Shooter() {
+        m_shooter_1 = new CANSparkMax(config.shooter1_ID, MotorType.kBrushless);
+        m_shooter_2 = new CANSparkMax(config.shooter2_ID, MotorType.kBrushless);
+        m_shooter_1.restoreFactoryDefaults();
+        m_shooter_2.restoreFactoryDefaults();
+        m_shooter_1.setSmartCurrentLimit(config.shooter_current_limit);
+        m_shooter_2.setSmartCurrentLimit(config.shooter_current_limit);
     }
 
     /**
@@ -21,18 +29,28 @@ public class Shooter {
      * @param power - the power of the motor as a double from 0.0 to 1.0
      */
     public void setPower(double power) {
-        this.m_shooter_1.set(power);
-        this.m_shooter_2.set(power);
+        m_shooter_1.set(power);
+        m_shooter_2.set(power);
     }
 
+    /**
+     * Set the power of both shooter motors to the predefined low shot power
+     */
     public void setPowerLow() {
         this.setPower(config.low_shot_power);
     }
 
+    /**
+     * Set the power of both shooter motors to the predefined high shot power
+     */
     public void setPowerHigh() {
         this.setPower(config.high_shot_power);
     }
 
+    /**
+     * Experimental method to determine the real time velocity of the shooter
+     * @return rps of the shooter
+     */
     public double getVelocity() {
         // Keep speed the same unless enough time passes for a new measure
         double dr = Math.abs(m_shooter_1.getEncoder().getPosition());
@@ -66,6 +84,9 @@ public class Shooter {
         SmartDashboard.putNumber("Power", p);
     }
 
+    /**
+     * Turn off the shooter
+     */
     public void stop() {
         this.setPower(0);
     }
