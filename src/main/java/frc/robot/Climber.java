@@ -23,8 +23,28 @@ public class Climber {
         m_climber_right.getEncoder().setPosition(0);
     }
 
-    public void leftClimberRaise() {
+    public void raiseLeftClimber() {
+        m_climber_left.set(0.96);
+    }
 
+    public void retractLeftClimber() {
+        m_climber_left.set(-0.96);
+    }
+
+    public void stopLeftClimber() {
+        m_climber_left.set(0);
+    }
+
+    public void raiseRightClimber() {
+        m_climber_right.set(1);
+    }
+
+    public void retractRightClimber() {
+        m_climber_right.set(-1);
+    }
+
+    public void stopRightClimber() {
+        m_climber_right.set(0);
     }
 
     /**
@@ -33,7 +53,7 @@ public class Climber {
     public void fullHookRaise() {
         if(status != "high") {
             m_climber_left.getEncoder().setPosition(0);
-            m_hook_right.getEncoder().setPosition(0);
+            m_climber_right.getEncoder().setPosition(0);
             status = "high";
         }
         if(m_climber_left.getEncoder().getPosition() < config.left_hook_high) {
@@ -43,12 +63,12 @@ public class Climber {
         else {
             m_climber_left.set(0);
         }
-        if(m_hook_right.getEncoder().getPosition() < config.right_hook_high) {
+        if(m_climber_right.getEncoder().getPosition() < config.right_hook_high) {
             // CHECK DIRECTION
-            m_hook_right.set(0.2);
+            m_climber_right.set(0.2);
         }
         else {
-            m_hook_right.set(0);
+            m_climber_right.set(0);
         }
     }
 
@@ -75,9 +95,9 @@ public class Climber {
      * @return boolean status completion
      */
     public boolean fullHookRetract() {
-        if(m_hook_left.getEncoder().getPosition() > config.hooks_low) {
+        if(m_climber_left.getEncoder().getPosition() > config.hooks_low) {
             // CHECK DIRECTION
-            m_hook_left.set(0);
+            m_climber_left.set(0);
             return false;
         }
         return true;
