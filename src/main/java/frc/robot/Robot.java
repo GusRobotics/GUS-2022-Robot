@@ -811,24 +811,24 @@ public class Robot extends TimedRobot {
 
       // Right Climber Arm
       if(joy_climb.getLeftBumper()) {
-        m_climber_right.set(1);
+        climber.raiseRightClimber();
       }
       else if(joy_climb.getLeftTriggerAxis() > 0.8) {
-        m_climber_right.set(-1);
+        climber.retractRightClimber();
       }
       else {
-        m_climber_right.set(0);
+        climber.stopRightClimber();
       }
 
       // Left Climber Arm
       if(joy_climb.getRightBumper()) {
-        m_climber_left.set(0.96);
+        climber.raiseLeftClimber();
       }
       else if(joy_climb.getRightTriggerAxis() > 0.8) {
-        m_climber_left.set(-0.96);
+        climber.retractLeftClimber();
       }
       else {
-        m_climber_left.set(0);
+        climber.stopLeftClimber();
       }
     }
 
