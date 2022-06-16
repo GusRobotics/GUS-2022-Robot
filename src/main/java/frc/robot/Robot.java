@@ -43,7 +43,7 @@ public class Robot extends TimedRobot {
   private static final String kTwoBallLowAuto = "Two Ball Low Auto";
   private static final String kTwoBallHighAuto = "Two Ball Extra Distance Auto";
   private static final String kFourBallHighAuto = "Four Ball Auto";
-  private static final String kOneBallAuto = "Shoot in Place";
+  private static final String kOneBallAuto = "One Ball Auto";
   private static final String kPidTuneAuto = "PID Tune Auto";
   private static final String kPIDTurnAuto = "Turn Test Auto";
 
@@ -117,7 +117,7 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Two Ball Low Auto", kTwoBallLowAuto);
     m_chooser.setDefaultOption("Two Ball High Auto", kTwoBallHighAuto);
     m_chooser.addOption("Four Ball High Auto", kFourBallHighAuto);
-    m_chooser.addOption("Shoot in Place", kOneBallAuto);
+    m_chooser.addOption("One Ball Auto", kOneBallAuto);
     m_chooser.addOption("PID Tuner", kPidTuneAuto);
     m_chooser.addOption("Turn Test", kPIDTurnAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -125,6 +125,7 @@ public class Robot extends TimedRobot {
     // Start position chooser
     start_position_chooser.setDefaultOption("Hanger Side", config.hangerSide);
     start_position_chooser.addOption("Wall Side", config.wallSide);
+    start_position_chooser.addOption("Middle Side", config.middleSide);
     SmartDashboard.putData("Start Position", start_position_chooser);
 
     // Set parallel motors to follow the leader
@@ -339,16 +340,20 @@ public class Robot extends TimedRobot {
           // Actuate and start intake
           intake_actuator.set(true);
           m_intake.set(1);
+          m_index.set(0);
 
           // Set the power
           shooter.setPower(0.68);
 
-          if(start_position.equals(config.hangerSide)) {
-            auto_drive.setDistance(7);
+          if(start_position.equals(config.middleSide)) {
+            // System.out.println("Correct Auto");
+            auto_drive.setDistance(7.5);
           }
           else {
-            auto_drive.setDistance(3);
+            // System.out.println("Wrong Auto");
+            auto_drive.setDistance(4);
           }
+          
           auto_stage++;
           break;
 
@@ -357,42 +362,67 @@ public class Robot extends TimedRobot {
           if(auto_drive.pidStraight()) {
             time_stamp = Timer.getFPGATimestamp();
             auto_drive.stop();
-            m_intake.set(0);
             auto_stage++;
           }
           break;
 
         case 2:
-          // Delay
-          if(Timer.getFPGATimestamp() - time_stamp > 3) {
+          // Wait in place so the ball if fully intaken
+          if(Timer.getFPGATimestamp() - time_stamp > 2) {
             time_stamp = Timer.getFPGATimestamp();
             auto_drive.stop();
-            m_index.set(0.3);
+            if(start_position.equals(config.hangerSide)) {
+              auto_drive.setDistance(4);
+            }
+            else {
+              auto_drive.setDistance(0.5);
+            }
+            auto_stage++;
+          }
+
+          if(!start_position.equals(config.middleSide) && Timer.getFPGATimestamp() - time_stamp > 1) {
+            // Retract the intake after 1s
+              intake_actuator.set(false);
+              m_intake.set(0);
+          }
+
+          // Shooter rev
+          shooter.setPowerAuto(limelight.getDistanceToHub() - 0.002);
+          break;
+
+        case 3:
+          // Go back to better shooting position if it has not already backed up
+
+          if(start_position.equals(config.middleSide) || auto_drive.pidStraight()) {
+            time_stamp = Timer.getFPGATimestamp();
+            auto_drive.stop();
             auto_stage++;
           }
 
           // Shooter rev
           shooter.setPowerAuto(limelight.getDistanceToHub() - 0.002);
 
-          // Drive align
+        case 4:
+          // Turn to target
           if(!limelight.isAlignedToShoot()) {
             if(limelight.hasTarget()) {
-              // When target is in sight, turn towards it
               m_drive_left.set(-(limelight.getTargetX() + 0.5) * 0.041);
               m_drive_right.set((limelight.getTargetX() + 0.5) * 0.041);
             }
           }
+          else {
+            time_stamp = Timer.getFPGATimestamp();
+            auto_stage++;
+          }
           break;
 
-        case 3:
+        case 5:
           // Index to shoot
-          if(Timer.getFPGATimestamp() - time_stamp > 1.4) {
+          auto_drive.stop();
+          m_index.set(0.3);
+
+          if(Timer.getFPGATimestamp() - time_stamp > 3) {
             time_stamp = Timer.getFPGATimestamp();
-            drive_gear_shift.set(true);
-            intake_actuator.set(false);
-            m_index.set(0);
-            shooter.stop();
-            auto_drive.setAngle(-99);
             auto_stage++;
           }
           break;
@@ -582,9 +612,20 @@ public class Robot extends TimedRobot {
           // Delay
           if(Timer.getFPGATimestamp() - time_stamp > 2.5) {
             time_stamp = Timer.getFPGATimestamp();
+            auto_drive.stop();
             m_index.set(0.4);
             auto_stage++;
           }
+    
+          // Drive align
+          if(!limelight.isAlignedToShoot()) {
+            if(limelight.hasTarget()) {
+              // When target is in sight, turn towards it
+              m_drive_left.set(-(limelight.getTargetX() + 0.5) * 0.041);
+              m_drive_right.set((limelight.getTargetX() + 0.5) * 0.041);
+            }
+          }
+          
           shooter.setPowerAuto(limelight.getDistanceToHub());
           break;
 
@@ -789,8 +830,6 @@ public class Robot extends TimedRobot {
       }
     }
     else {
-      joy_climb.setRumble(RumbleType.kLeftRumble, 0);
-      joy_climb.setRumble(RumbleType.kRightRumble, 0);
       m_index.set(0);
     }
     SmartDashboard.putBoolean("Index on", index_on);

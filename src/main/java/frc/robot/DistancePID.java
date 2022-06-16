@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DistancePID {
     // Motor information
@@ -44,6 +45,8 @@ public class DistancePID {
     public boolean pidControl(String id) {
         this.error = this.set_point - motor.getEncoder().getPosition()*config.rev_feet_conversion;
         this.dt = Timer.getFPGATimestamp() - this.last_time;
+
+        // SmartDashboard.putNumber("battlecry", motor.getEncoder().getPosition()*config.rev_feet_conversion);
 
         // Integral
         if(Math.abs(this.error) < integral_range) {

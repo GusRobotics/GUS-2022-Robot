@@ -39,7 +39,7 @@ public class config {
 
     // Constant Robot Stats
     public static final double rev_feet_conversion = 10/42.35;
-    public static final int dist1_threshold = 375;
+    public static final int dist1_threshold = 280;
 
     // Index power
     public static final double index_power = 0.65;
@@ -65,6 +65,7 @@ public class config {
     // Start positions
     public static final String hangerSide = "Hangar Tarmac";
     public static final String wallSide = "Side Tarmac";
+    public static final String middleSide = "Middle of the Tarmacs";
 
     // Climber hook encoder positions (absolute zero is the initial position) - these are not tuned
     public static final double hooks_low = 5;
